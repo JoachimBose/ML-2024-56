@@ -7,9 +7,10 @@ if sys.argv.__len__() < 2:
     exit(1)
 
 args = sys.argv[2:]
+print(" ".join( ["clang-17"] + args + ["-I../utilities", "2mm.c", "2mm.h", "../utilities/polybench.c", "../utilities/polybench.h"]))
 
 subprocess.call(
-    ["clang-17"] + args + ["-I../utilities", "2mm.c", "2mm.h", "../utilities/polybench.c", "../utilities/polybench.h"],
+    ["clang-17"] + args + ["-I../utilities", "2mm.c", "../utilities/polybench.c"],
     stdout=subprocess.DEVNULL,
     stderr=subprocess.DEVNULL
 )
