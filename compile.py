@@ -5,7 +5,9 @@ import subprocess
 test_dir = "./test/PolyBenchC/"
 util_dir = "./test/PolyBenchC/utilities/"
 cache_dir = "./test/Cache/"
-
+if not os.path.exists(cache_dir):
+    os.makedirs(cache_dir)
+    
 compile_args = {
     "2mm": "",
     "3mm": "",
