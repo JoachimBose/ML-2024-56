@@ -44,7 +44,7 @@ compile_args = {
 potential_passes = ["-mem2reg -sccp", "-mem2reg -licm", "-adce"]
 
 
-def do_or_cache(test, test_type):
+def do_or_cache(test, test_type, args):
     out_file = f"{cache_dir}{test}-{test_type}.out"
     if os.path.exists(out_file):
         print("Cached: ", test, os.stat(out_file).st_size)
@@ -95,10 +95,10 @@ if __name__ == "__main__":
 
     if sys.argv[1] == "all":
         for test in compile_args:
-            do_or_cache(test, test_type)
+            do_or_cache(test, test_type, args)
     elif sys.argv[1] in compile_args:
         test = sys.argv[1]
-        do_or_cache(test, test_type)
+        do_or_cache(test, test_type,args )
 
     else:
         print("invalid test")
