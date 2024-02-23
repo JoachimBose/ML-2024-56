@@ -16,10 +16,10 @@
 //
 // License: MIT
 //=============================================================================
-#include "llvm/IR/LegacyPassManager.h"
-#include "llvm/Passes/PassBuilder.h"
-#include "llvm/Passes/PassPlugin.h"
-#include "llvm/Support/raw_ostream.h"
+#include <llvm/IR/LegacyPassManager.h>
+#include <llvm/Passes/PassBuilder.h>
+#include <llvm/Passes/PassPlugin.h>
+#include <llvm/Support/raw_ostream.h>
 
 using namespace llvm;
 
@@ -32,8 +32,8 @@ namespace {
 
 // This method implements what the pass does
 void visitor(Function &F) {
-    errs() << "(llvm-tutor) Hello from: "<< F.getName() << "\n";
-    errs() << "(llvm-tutor)   number of arguments: " << F.arg_size() << "\n";
+    errs() << "(feat-extr) Hello from: "<< F.getName() << "\n";
+    errs() << "(feat-extr)   number of arguments: " << F.arg_size() << "\n";
 }
 
 // New PM implementation
