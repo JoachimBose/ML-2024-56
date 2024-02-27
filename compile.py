@@ -1,7 +1,6 @@
 import os
 import sys
 import subprocess
-import time
 import logging
 
 logging.basicConfig(stream=sys.stderr, level=logging.INFO)
@@ -90,9 +89,8 @@ def do_or_cache(test, test_type, args):
     out_file = f"{cache_dir}{test}-{test_type}.bc"
     if os.path.exists(out_file):
         logging.debug(f"Cached: {test}-{test_type}.bc")
-        print(f"{test}: {os.stat(out_file).st_size}")
+        print(f"{test}~{test_type}: {os.stat(out_file).st_size}")
         return
-
     try:
         process = subprocess.run(
             ["./gen_bc.sh", args, f"{cache_dir}{test}.ll", out_file],
@@ -106,57 +104,63 @@ def do_or_cache(test, test_type, args):
         logging.debug(f"Error occurred: {e}")
 
     logging.debug(f"Compiled: {test}-{test_type}.bc")
-    print(f"{test}: {os.stat(out_file).st_size}")
+    print(f"{test}-{test_type}: {os.stat(out_file).st_size}")
+
+
+def bad_usage():
+    print(
+        "bad usage, see examples:\npython3 compile.py clean\npython3 compile.py <target> <passes>"
+    )
+    print("target: all, <test>")
+    print("passes: llvm, size, none, <pass binary>")
+    print("pass binary length: ", len(potential_passes))
+    exit(0)
 
 
 if __name__ == "__main__":
 
-    # Getting the test
     if sys.argv.__len__() < 2:
-        print("missing target (all or specific test)")
-        exit(1)
+        bad_usage()
 
-    # Getting the passes
-    if sys.argv.__len__() >= 3:
-        test_type = sys.argv[2]
-    else:
-        test_type = "size"
+    if sys.argv[1] == "clean":
+        for file in os.listdir(cache_dir):
+            os.remove(f"{cache_dir}{file}")
+        exit(0)
 
-    gen_llvm = False
+    if sys.argv.__len__() < 3:
+        bad_usage()
 
-    # Constructing the arguments
+    test_target = sys.argv[1]
+    test_type = sys.argv[2]
+
+    if test_target not in ["all"] + list(compile_args.keys()):
+        bad_usage()
+    if test_type not in ["llvm", "size", "none"] and (
+        len(test_type) != len(potential_passes) or not test_type.isnumeric()
+    ):
+        bad_usage()
+
     if test_type == "llvm":
-        gen_llvm = True
-    elif test_type == "size":
+        if test_target == "all":
+            for test in compile_args:
+                generate_llvm(test)
+        else:
+            generate_llvm(test_target)
+        exit(0)
+
+    if test_type == "size":
         args = "default<Os>"
     elif test_type == "none":
         args = ""
-    elif len(test_type) == len(potential_passes):
+    else:
         options = []
         for i, c in enumerate(test_type):
             if int(c):
                 options.append(potential_passes[i])
         args = ",".join(options)
-    else:
-        print("invalid passes")
-        exit(1)
 
-    if sys.argv[1] == "all":
+    if test_target == "all":
         for test in compile_args:
-            if gen_llvm:
-                generate_llvm(test)
-            else:
-                do_or_cache(test, test_type, args)
-    elif sys.argv[1] in compile_args:
-        test = sys.argv[1]
-        if gen_llvm:
-            generate_llvm(test)
-        else:
             do_or_cache(test, test_type, args)
-    elif sys.argv[1] == "clean":
-        for file in os.listdir(cache_dir):
-            if file.endswith(".bc") or file.endswith(".ll"):
-                os.remove(f"{cache_dir}{file}")
     else:
-        print("invalid test")
-        exit(1)
+        do_or_cache(test_target, test_type, args)
