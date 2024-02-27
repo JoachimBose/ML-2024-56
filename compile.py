@@ -1,13 +1,17 @@
 import os
 import sys
 import subprocess
+import time
+import logging
+
+logging.basicConfig(stream=sys.stderr, level=logging.INFO)
 
 test_dir = "./test/PolyBenchC/"
 util_dir = "./test/PolyBenchC/utilities/"
 cache_dir = "./test/Cache/"
 if not os.path.exists(cache_dir):
     os.makedirs(cache_dir)
-    
+
 compile_args = {
     "2mm": "",
     "3mm": "",
@@ -41,29 +45,68 @@ compile_args = {
     "trmm": "",
 }
 
-potential_passes = ["-mem2reg -sccp", "-mem2reg -licm", "-adce"]
+potential_passes = [
+    "loop-unroll",
+    "sroa,mem2reg",
+    "licm",
+    "loop-simplify,loop-rotate",
+    "early-cse,sink",
+    "instcombine",
+    "instsimplify",
+    "loop-vectorize",
+    "adce",
+    "reassociate",
+]
+
+
+def generate_llvm(test):
+    out_file = f"{cache_dir}{test}.ll"
+    if os.path.exists(out_file):
+        logging.debug(f"Already cached: {test}.ll")
+        return
+    try:
+        process = subprocess.run(
+            [
+                "./gen_llvm.sh",
+                util_dir,
+                test_dir,
+                test,
+                compile_args[test],
+                out_file,
+            ],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        output = process.stdout
+        logging.debug(f"gen_llvm.sh output:\n{output}")
+    except subprocess.CalledProcessError as e:
+        logging.debug(f"Error occurred: {e}")
+    logging.debug(f"Generated: {test}.ll")
 
 
 def do_or_cache(test, test_type, args):
-    out_file = f"{cache_dir}{test}-{test_type}.out"
+    generate_llvm(test)
+    out_file = f"{cache_dir}{test}-{test_type}.bc"
     if os.path.exists(out_file):
-        print("Cached: ", test, os.stat(out_file).st_size)
+        logging.debug(f"Cached: {test}-{test_type}.bc")
+        print(f"{test}: {os.stat(out_file).st_size}")
         return
-    subprocess.call(
-        ["clang-17"]
-        + args
-        + [
-            f"-I{util_dir}",
-            f"{test_dir}{test}/{test}.c",
-            compile_args[test],
-            f"{util_dir}polybench.c",
-            "-o",
-            f"{out_file}",
-        ],
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-    )
-    print("Compiled: ", test, os.stat(out_file).st_size)
+
+    try:
+        process = subprocess.run(
+            ["./gen_bc.sh", args, f"{cache_dir}{test}.ll", out_file],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        output = process.stdout
+        logging.debug(f"gen_bc.sh output:\n{output}")
+    except subprocess.CalledProcessError as e:
+        logging.debug(f"Error occurred: {e}")
+
+    logging.debug(f"Compiled: {test}-{test_type}.bc")
+    print(f"{test}: {os.stat(out_file).st_size}")
 
 
 if __name__ == "__main__":
@@ -79,27 +122,41 @@ if __name__ == "__main__":
     else:
         test_type = "size"
 
+    gen_llvm = False
+
     # Constructing the arguments
-    if test_type == "size":
-        args = ["-Os"]
+    if test_type == "llvm":
+        gen_llvm = True
+    elif test_type == "size":
+        args = "default<Os>"
     elif test_type == "none":
-        args = []
+        args = ""
     elif len(test_type) == len(potential_passes):
-        args = []
+        options = []
         for i, c in enumerate(test_type):
             if int(c):
-                args.append(potential_passes[i])
+                options.append(potential_passes[i])
+        args = ",".join(options)
     else:
         print("invalid passes")
         exit(1)
 
     if sys.argv[1] == "all":
         for test in compile_args:
-            do_or_cache(test, test_type, args)
+            if gen_llvm:
+                generate_llvm(test)
+            else:
+                do_or_cache(test, test_type, args)
     elif sys.argv[1] in compile_args:
         test = sys.argv[1]
-        do_or_cache(test, test_type,args )
-
+        if gen_llvm:
+            generate_llvm(test)
+        else:
+            do_or_cache(test, test_type, args)
+    elif sys.argv[1] == "clean":
+        for file in os.listdir(cache_dir):
+            if file.endswith(".bc") or file.endswith(".ll"):
+                os.remove(f"{cache_dir}{file}")
     else:
         print("invalid test")
         exit(1)
