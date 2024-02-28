@@ -1,2 +1,4 @@
 llvm-passes/build
-test/Cache/
+core/test/Cache/
+
+**/__pycache__/

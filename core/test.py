@@ -13,14 +13,16 @@ def is_compile(path):
 
 def get_directories():
     path = os.getcwd() + '/test'
-
+    
     all_directories = []
 
     for directory in list_directories(path):
+        print(directory)
         path_temp = path + '/' + directory
         directories = list(filter(is_compile, map((lambda d: './test/' + directory + '/' + d), list_directories(path_temp))))
         all_directories.append(directories)
     return all_directories
+
 if(__name__ == "__main__"):
     for i in get_directories():
         print(i)

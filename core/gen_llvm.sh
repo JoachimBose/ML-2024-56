@@ -17,4 +17,3 @@ llvm-link-17 -S -v -o "$out_file" *.ll
 # Remove all generated LLVM IR files
 echo "rm *.ll"
 rm *.ll
-
