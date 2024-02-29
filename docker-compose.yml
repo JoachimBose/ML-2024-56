@@ -4,7 +4,7 @@ services:
     build: 
       context: .
     volumes:
-      - .:/usr/src/app
+      - .:/usr/src/app:Z
     container_name: machine-learning
     command: /bin/bash
     tty: true

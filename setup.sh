@@ -44,7 +44,7 @@ then
 fi
 
 if [ "$force_build" == false ] && \
-    docker-compose ps --filter State=Up | grep "machine-learning" &> /dev/null;
+    docker-compose ps machine-learning | grep Up &> /dev/null;
 then
     [ "$enter" == true ] && enter_container
     echo "[:(] Container is already running, did you mean to run with -e?"
