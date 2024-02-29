@@ -1,61 +1,68 @@
-#include "llvm/IR/Function.h"
-#include "llvm/IR/LegacyPassManager.h"
-#include "llvm/Pass.h"
-#include "llvm/Passes/PassBuilder.h"
-#include "llvm/Passes/PassPlugin.h"
-#include "llvm/Support/CommandLine.h"
-#include "llvm/Support/raw_ostream.h"
+//=============================================================================
+// FILE:
+//    HelloWorld.cpp
+//
+// DESCRIPTION:
+//    Visits all functions in a module, prints their names and the number of
+//    arguments via stderr. Strictly speaking, this is an analysis pass (i.e.
+//    the functions are not modified). However, in order to keep things simple
+//    there's no 'print' method here (every analysis pass should implement it).
+//
+// USAGE:
+//    New PM
+//      opt -load-pass-plugin=libHelloWorld.dylib -passes="hello-world" `\`
+//        -disable-output <input-llvm-file>
+//
+//
+// License: MIT
+//=============================================================================
+#include <llvm/IR/LegacyPassManager.h>
+#include <llvm/Passes/PassBuilder.h>
+#include <llvm/Passes/PassPlugin.h>
+#include <llvm/Support/raw_ostream.h>
 
 using namespace llvm;
 
-static cl::opt<bool> Wave("wave-goodbye", cl::init(false),
-                          cl::desc("wave good bye"));
-
+//-----------------------------------------------------------------------------
+// HelloWorld implementation
+//-----------------------------------------------------------------------------
+// No need to expose the internals of the pass to the outside world - keep
+// everything in an anonymous namespace.
 namespace {
 
-bool runBye(Function &F) {
-  if (Wave) {
-    errs() << "Bye: ";
-    errs().write_escaped(F.getName()) << '\n';
-  }
-  return false;
+// This method implements what the pass does
+void visitor(Function &F) {
+    errs() << "(feat-extr) Hello from: "<< F.getName() << "\n";
+    errs() << "(feat-extr)   number of arguments: " << F.arg_size() << "\n";
 }
 
-struct LegacyBye : public FunctionPass {
-  static char ID;
-  LegacyBye() : FunctionPass(ID) {}
-  bool runOnFunction(Function &F) override { return runBye(F); }
-};
-
-struct Bye : PassInfoMixin<Bye> {
+// New PM implementation
+struct HelloWorld : PassInfoMixin<HelloWorld> {
+  // Main entry point, takes IR unit to run the pass on (&F) and the
+  // corresponding pass manager (to be queried if need be)
   PreservedAnalyses run(Function &F, FunctionAnalysisManager &) {
-    if (!runBye(F))
-      return PreservedAnalyses::all();
-    return PreservedAnalyses::none();
+    visitor(F);
+    return PreservedAnalyses::all();
   }
-};
 
+  // Without isRequired returning true, this pass will be skipped for functions
+  // decorated with the optnone LLVM attribute. Note that clang -O0 decorates
+  // all functions with optnone.
+  static bool isRequired() { return true; }
+};
 } // namespace
 
-char LegacyBye::ID = 0;
-
-static RegisterPass<LegacyBye> X("feat-extr", "Good Bye World Pass",
-                                 false /* Only looks at CFG */,
-                                 false /* Analysis Pass */);
-
-/* New PM Registration */
-llvm::PassPluginLibraryInfo getByePluginInfo() {
-  return {LLVM_PLUGIN_API_VERSION, "Bye", LLVM_VERSION_STRING,
+//-----------------------------------------------------------------------------
+// New PM Registration
+//-----------------------------------------------------------------------------
+llvm::PassPluginLibraryInfo getHelloWorldPluginInfo() {
+  return {LLVM_PLUGIN_API_VERSION, "feat-extr", LLVM_VERSION_STRING,
           [](PassBuilder &PB) {
-            PB.registerVectorizerStartEPCallback(
-                [](llvm::FunctionPassManager &PM, OptimizationLevel Level) {
-                  PM.addPass(Bye());
-                });
             PB.registerPipelineParsingCallback(
-                [](StringRef Name, llvm::FunctionPassManager &PM,
-                   ArrayRef<llvm::PassBuilder::PipelineElement>) {
+                [](StringRef Name, FunctionPassManager &FPM,
+                   ArrayRef<PassBuilder::PipelineElement>) {
                   if (Name == "feat-extr") {
-                    PM.addPass(Bye());
+                    FPM.addPass(HelloWorld());
                     return true;
                   }
                   return false;
@@ -63,9 +70,10 @@ llvm::PassPluginLibraryInfo getByePluginInfo() {
           }};
 }
 
-#ifndef LLVM_BYE_LINK_INTO_TOOLS
+// This is the core interface for pass plugins. It guarantees that 'opt' will
+// be able to recognize HelloWorld when added to the pass pipeline on the
+// command line, i.e. via '-passes=hello-world'
 extern "C" LLVM_ATTRIBUTE_WEAK ::llvm::PassPluginLibraryInfo
 llvmGetPassPluginInfo() {
-  return getByePluginInfo();
+  return getHelloWorldPluginInfo();
 }
-#endif
