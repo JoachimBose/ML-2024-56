@@ -12,19 +12,22 @@ Features (Printed in order):
   - N-Total Insts
   - N-FP Insts
   - N-Int Insts
-  - Ratio of FP Insts to Int Insts
   - N-Loads
   - N-Stores
+  - Ratio of FP Insts to Int Insts
+  - N-Builtin math functions
+  - N-functions
 
 TODO:
-  - N-Builtin math functions
+
 
 Look-into:
   - Average MLP per basic block
   - Average ILP per basic block
-  - N-Barriers
+
 
 Skipped (Too Multithreading related):
+  - N-Barriers
   - Div-stuff (Where threads diverge; not relevant)
   - N-Divergent Insts
   - N-Insts in divergent regions
@@ -35,6 +38,13 @@ namespace {
 class FunctionFeature {
   public:
     virtual void runOnFunction(Function &function) {}
+    virtual void printResult() {}
+    virtual ~FunctionFeature() {}
+};
+
+class ModuleFeature {
+  public:
+    virtual void runOnModule(Module &module) {}
     virtual void printResult() {}
 };
 
@@ -54,6 +64,21 @@ class BasicBlockCounter : public FunctionFeature {
     void printResult() { errs() << nBasicBlocks << ","; }
 };
 
+class FunctionCounter : public ModuleFeature {
+  private:
+    int nIntrinsicFunctions = 0;
+    int nFunction = 0;
+
+  public:
+    void runOnModule(Module &module) {
+        for (Function &function : module) {
+            nIntrinsicFunctions += (int)function.isIntrinsic();
+            nFunction++;
+        }
+    }
+    void printResult() { errs() << nIntrinsicFunctions << "," << nFunction << ","; }
+};
+
 class InstructionCounter : public FunctionFeature {
     int nInsts = 0;
     int nFPInsts = 0;
@@ -61,6 +86,7 @@ class InstructionCounter : public FunctionFeature {
     int rFPtoInt = 0; // float?
     int nLoads = 0;
     int nStores = 0;
+    double ratioFloatIntInsts = 0.0;
 
   public:
     InstructionCounter() {}
@@ -78,11 +104,12 @@ class InstructionCounter : public FunctionFeature {
         }
 
         // calculate ratio's here
+        ratioFloatIntInsts = ((double)nFPInsts) / nIntInsts;
     }
 
     void printResult() {
         errs() << nInsts << "," << nFPInsts << "," << nIntInsts << "," << rFPtoInt << ",";
-        errs() << nLoads << "," << nStores;
+        errs() << nLoads << "," << nStores << "," << ratioFloatIntInsts << ",";
     }
 };
 
@@ -111,16 +138,22 @@ class ConditionalJMPCounter : public FunctionFeature {
 class FeatureFactory {
   public:
     SmallVector<FunctionFeature *> functionFeatures;
+    SmallVector<ModuleFeature *> moduleFeatures;
 
     FeatureFactory() {
         functionFeatures.push_back(new BasicBlockCounter());
         functionFeatures.push_back(new ConditionalJMPCounter());
         functionFeatures.push_back(new InstructionCounter());
+
+        moduleFeatures.push_back(new FunctionCounter());
     }
 
     ~FeatureFactory() {
         for (size_t i = 0; i < functionFeatures.size(); i++)
             delete functionFeatures[i];
+
+        for (size_t i = 0; i < moduleFeatures.size(); i++)
+            delete moduleFeatures[i];
     }
 };
 
@@ -131,6 +164,12 @@ struct HelloWorld : PassInfoMixin<HelloWorld> {
     // Main entry point, takes IR unit to run the pass on (&F) and the
     // corresponding pass manager (to be queried if need be)
 
+    void runOnModule(Module &module) {
+        for (size_t i = 0; i < features.moduleFeatures.size(); i++) {
+            features.moduleFeatures[i]->runOnModule(module);
+        }
+    }
+
     void runOnFunction(Function &function) {
         for (size_t i = 0; i < features.functionFeatures.size(); i++)
             features.functionFeatures[i]->runOnFunction(function);
@@ -139,6 +178,10 @@ struct HelloWorld : PassInfoMixin<HelloWorld> {
     void exportResults() {
         for (size_t i = 0; i < features.functionFeatures.size(); i++)
             features.functionFeatures[i]->printResult();
+        for (size_t i = 0; i < features.moduleFeatures.size(); i++) {
+            features.moduleFeatures[i]->printResult();
+        }
+
         errs() << "\n";
     }
 
@@ -149,6 +192,7 @@ struct HelloWorld : PassInfoMixin<HelloWorld> {
 
     PreservedAnalyses run(Module &module, ModuleAnalysisManager &AM) {
         // LoopAnalysis::Result analysis = AM.getResult<LoopAnalysis>(module);
+        runOnModule(module);
         for (Function &function : module) {
             runOnFunction(function);
         }
