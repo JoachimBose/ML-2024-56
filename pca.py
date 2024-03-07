@@ -33,4 +33,4 @@ plt.savefig("img")
 # Create a dataframe, add the target label and dump it back to disk
 df = DataFrame(X_pca_data)
 df.insert(len(df.columns), target, Y_data, True)
-savetxt("./output.csv", df, delimiter=",")
+savetxt(target_location, df, delimiter=",")
