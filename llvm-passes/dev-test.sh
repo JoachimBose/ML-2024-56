@@ -16,6 +16,18 @@ fi
 # Make and run test
 cd ./build
 make
-cd ..
-opt-17 -load-pass-plugin ./build/lib/libFeatExtr.so -passes=feat-extr ./2mm.ll \
-    -S -disable-output
+
+if [ $? -eq 0 ] 
+then
+    cd ..
+    # set up nice stacktrace
+    export LLVM_SYMBOLIZER_PATH="/usr/bin/llvm-symbolizer-17"
+    
+    #load and run
+    opt-17 -load-pass-plugin ./build/lib/libFeatExtr.so -passes=feat-extr \
+    ./2mm.ll -S -disable-output
+else
+    echo "make returned error, not continueing"
+fi
+
+

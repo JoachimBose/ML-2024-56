@@ -13,3 +13,7 @@ For consistent results, a docker container is provided, which can be built using
  the `setup.sh` script. By default the container gets built and started if not
  existant, otherwise it exits. To run, make sure `docker` and `docker-compose`
  are installed.
+
+When editing the `.cpp` files in `llvm-passes`, please use for vscode the
+ `Clang_format_fallback Style`
+ `{ BasedOnStyle: LLVM, IndentWidth: 4, ColumnLimit: 100 }` formatting settings.
