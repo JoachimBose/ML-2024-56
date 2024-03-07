@@ -1,0 +1,9 @@
+llvm-passes/build
+core/test/Cache/
+llvm-passes/feat-extr/CMakeFiles/
+**/cmake_install.cmake
+llvm-passes/**/Makefile
+**/__pycache__/
+**.gch
+llvm-passes/CMakeFiles/
+llvm-passes/CMakeCache.txt
