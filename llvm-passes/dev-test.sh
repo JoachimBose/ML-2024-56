@@ -23,9 +23,11 @@ then
     # set up nice stacktrace
     export LLVM_SYMBOLIZER_PATH="/usr/bin/llvm-symbolizer-17"
     
+    target_file="$1"
+
     #load and run
     opt-17 -load-pass-plugin ./build/lib/libFeatExtr.so -passes=feat-extr \
-    ./2mm.ll -S -disable-output
+    $target_file -S -disable-output
 else
     echo "make returned error, not continueing"
 fi

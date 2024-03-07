@@ -3,7 +3,7 @@ import sys
 import subprocess
 import logging
 
-logging.basicConfig(stream=sys.stderr, level=logging.INFO)
+logging.basicConfig(stream=sys.stderr, level=logging.WARNING)
 
 test_dir = "./test/PolyBenchC/"
 util_dir = "./test/PolyBenchC/utilities/"
@@ -89,7 +89,7 @@ def do_or_cache(test, test_type, args):
     out_file = f"{cache_dir}{test}-{test_type}.bc"
     if os.path.exists(out_file):
         logging.debug(f"Cached: {test}-{test_type}.bc")
-        print(f"{test}~{test_type}: {os.stat(out_file).st_size}")
+        logging.info(f"{test}~{test_type}: {os.stat(out_file).st_size}")
         return
     try:
         process = subprocess.run(
@@ -104,7 +104,7 @@ def do_or_cache(test, test_type, args):
         logging.debug(f"Error occurred: {e}")
 
     logging.debug(f"Compiled: {test}-{test_type}.bc")
-    print(f"{test}-{test_type}: {os.stat(out_file).st_size}")
+    logging.info(f"{test}-{test_type}: {os.stat(out_file).st_size}")
 
 
 def bad_usage():
