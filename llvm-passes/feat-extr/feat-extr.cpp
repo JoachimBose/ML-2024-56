@@ -2,6 +2,7 @@
 #include <llvm/Passes/PassBuilder.h>
 #include <llvm/Passes/PassPlugin.h>
 #include <llvm/Support/raw_ostream.h>
+#include <iostream>
 
 using namespace llvm;
 
@@ -61,7 +62,7 @@ class BasicBlockCounter : public FunctionFeature {
         }
     }
 
-    void printResult() { errs() << nBasicBlocks << ","; }
+    void printResult() { std::cerr << nBasicBlocks << ","; }
 };
 
 class FunctionCounter : public ModuleFeature {
@@ -76,14 +77,13 @@ class FunctionCounter : public ModuleFeature {
             nFunction++;
         }
     }
-    void printResult() { errs() << nIntrinsicFunctions << "," << nFunction << ","; }
+    void printResult() { std::cerr << nIntrinsicFunctions << "," << nFunction; }
 };
 
 class InstructionCounter : public FunctionFeature {
     int nInsts = 0;
     int nFPInsts = 0;
     int nIntInsts = 0;
-    int rFPtoInt = 0; // float?
     int nLoads = 0;
     int nStores = 0;
     double ratioFloatIntInsts = 0.0;
@@ -108,8 +108,10 @@ class InstructionCounter : public FunctionFeature {
     }
 
     void printResult() {
-        errs() << nInsts << "," << nFPInsts << "," << nIntInsts << "," << rFPtoInt << ",";
-        errs() << nLoads << "," << nStores << "," << ratioFloatIntInsts << ",";
+        std::cerr << std::fixed;
+        std::cerr.precision(3);
+        std::cerr << nInsts << "," << nFPInsts << "," << nIntInsts << ",";
+        std::cerr << nLoads << "," << nStores << "," << ratioFloatIntInsts << ",";
     }
 };
 
@@ -129,7 +131,7 @@ class ConditionalJMPCounter : public FunctionFeature {
         }
     }
 
-    void printResult() { errs() << nConditionalJMP << ","; }
+    void printResult() { std::cerr << nConditionalJMP << ","; }
 };
 
 /*Gregs voice is ghosting through my head :'(
@@ -181,8 +183,6 @@ struct HelloWorld : PassInfoMixin<HelloWorld> {
         for (size_t i = 0; i < features.moduleFeatures.size(); i++) {
             features.moduleFeatures[i]->printResult();
         }
-
-        errs() << "\n";
     }
 
     // void getAnalysisUsage(AnalysisUsage &analysisUsage){

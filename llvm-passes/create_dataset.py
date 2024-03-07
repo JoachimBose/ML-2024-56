@@ -15,13 +15,16 @@ test_names = [os.path.basename(f) for f in os.listdir(tests_dir)]
 test_names.remove("utilities")
 
 features = [
+    "nBasicBlocks",
+    "nConditionalJMPs",
     "nInsts",
     "nFPInsts",
     "nIntInsts",
-    "rFPtoInt",
     "nLoads",
     "nStores",
     "ratioFloatIntInsts",
+    "intrinsicFunctions",
+    "functions"
 ]
 columns = ["test"] + features + ["target-size"]
 
@@ -38,7 +41,8 @@ if __name__ == "__main__":
             capture_output=True,
             text=True,
         )
-        output = process.stdout
+        print(process)
+        output = process.stderr
         logging.debug(f"dev-test.sh output:\n{output}")
         output_vals = [float(val) for val in output.split(",")]
         if len(output_vals) != len(features):
