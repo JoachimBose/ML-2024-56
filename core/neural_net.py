@@ -6,7 +6,7 @@ from pandas import read_csv
 
 source_location = "../source.csv"
 input_count = 10
-output_count = 10
+output_count = 9
 target = "target-size"
 test = "test"
 
