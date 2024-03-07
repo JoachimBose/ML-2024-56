@@ -6,15 +6,17 @@ import matplotlib.pyplot as plt
 from numpy import cumsum, savetxt
 
 # Where to read the source data from, where to put the output, how many components to get, and the label of the target value
-source_location = "./source.csv"
+source_location = "./dataset.csv"
 target_location = "./output.csv"
 n_components = 10
-target = "target"
+target = "target-size"
+test = "test"
 
 # Load the data and separate out the target
 data = read_csv(source_location)
 Y_data = data[target].values.astype("int32")
-data.drop([target], axis=1, inplace=True)
+test_data = data[test].values
+data.drop([target, test], axis=1, inplace=True)
 
 X_data = (data.values).astype("float32")
 scaler = StandardScaler()
@@ -33,4 +35,5 @@ plt.savefig("img")
 # Create a dataframe, add the target label and dump it back to disk
 df = DataFrame(X_pca_data)
 df.insert(len(df.columns), target, Y_data, True)
+df.insert(len(df.columns), test, test_data, True)
 savetxt(target_location, df, delimiter=",")
