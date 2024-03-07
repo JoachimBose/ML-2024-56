@@ -36,4 +36,17 @@ plt.savefig("img")
 df = DataFrame(X_pca_data)
 df.insert(len(df.columns), target, Y_data, True)
 df.insert(len(df.columns), test, test_data, True)
-savetxt(target_location, df, delimiter=",")
+
+
+fmt = ""
+# for i in range(0,11):
+#     fmt = "%.18e," + fmt
+
+for col in df:
+    if(type(df[col].dtype) == dtype('object')):
+        fmt += "%s,"
+    else:
+        fmt += "%.18e,"
+fmt = fmt[:-1] 
+savetxt(target_location, df, delimiter=",", fmt=fmt)
+
