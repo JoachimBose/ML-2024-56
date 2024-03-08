@@ -2,11 +2,13 @@ import os
 import sys
 import subprocess
 import logging
+from pathlib import Path
 
 logging.basicConfig(stream=sys.stderr, level=logging.INFO)
 
 test_dir = "./test/PolyBenchC/"
 util_dir = "./test/PolyBenchC/utilities/"
+aoc_dir = "./test/AoC"
 cache_dir = "./test/Cache/"
 if not os.path.exists(cache_dir):
     os.makedirs(cache_dir)
@@ -44,6 +46,8 @@ compile_args = {
     "trmm": "",
 }
 
+aoc_files = [Path(file).stem for file in os.listdir(aoc_dir) if file.endswith(".cpp")]
+
 potential_passes = [
     "loop-unroll",
     "sroa,mem2reg",
@@ -63,21 +67,39 @@ def generate_llvm(test):
         logging.debug(f"Already cached: {test}.ll")
         return
     try:
-        process = subprocess.run(
-            [
-                "./gen_llvm.sh",
-                util_dir,
-                test_dir,
-                test,
-                compile_args[test],
-                out_file,
-            ],
-            check=True,
-            capture_output=True,
-            text=True,
-        )
-        output = process.stdout
-        logging.debug(f"gen_llvm.sh output:\n{output}")
+        if test in list(compile_args.keys()):
+            process = subprocess.run(
+                [
+                    "./gen_llvm.sh",
+                    util_dir,
+                    test_dir,
+                    test,
+                    compile_args[test],
+                    out_file,
+                ],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            output = process.stdout
+            logging.debug(f"gen_llvm.sh output:\n{output}")
+        else:
+            process = subprocess.run(
+                [
+                    "clang-17",
+                    "-S",
+                    "-O0",
+                    "-emit-llvm",
+                    f"{aoc_dir}/{test}.cpp",
+                    "-o",
+                    out_file,
+                ],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            output = process.stdout
+            logging.debug(f"AoC clang-17 output:\n{output}")
     except subprocess.CalledProcessError as e:
         logging.debug(f"Error occurred: {e}")
     logging.debug(f"Generated: {test}.ll")
@@ -107,9 +129,10 @@ def do_or_cache(test, test_type, args):
 
 
 def bad_usage():
-    print(
-        "bad usage, see examples:\npython3 compile.py clean\npython3 compile.py <target> <passes>"
-    )
+    print("bad usage, see examples:")
+    print("python3 compile.py <clean>")
+    print("clean: clean, clean-bc")
+    print("python3 compile.py <target> <passes>")
     print("target: all, <test>")
     print("passes: llvm, size, none, <pass binary>")
     print("pass binary length: ", len(potential_passes))
@@ -125,6 +148,11 @@ if __name__ == "__main__":
         for file in os.listdir(cache_dir):
             os.remove(f"{cache_dir}{file}")
         exit(0)
+    if sys.argv[1] == "clean-bc":
+        for file in os.listdir(cache_dir):
+            if file.endswith(".bc"):
+                os.remove(f"{cache_dir}{file}")
+        exit(0)
 
     if sys.argv.__len__() < 3:
         bad_usage()
@@ -132,7 +160,10 @@ if __name__ == "__main__":
     test_target = sys.argv[1]
     test_type = sys.argv[2]
 
-    if test_target not in ["all"] + list(compile_args.keys()):
+    if (
+        test_target not in ["all"] + list(compile_args.keys())
+        and test_target not in aoc_files
+    ):
         bad_usage()
     if test_type not in ["llvm", "size", "none"] and (
         len(test_type) != len(potential_passes) or not test_type.isnumeric()
@@ -142,6 +173,8 @@ if __name__ == "__main__":
     if test_type == "llvm":
         if test_target == "all":
             for test in compile_args:
+                generate_llvm(test)
+            for test in aoc_files:
                 generate_llvm(test)
         else:
             generate_llvm(test_target)
@@ -160,6 +193,8 @@ if __name__ == "__main__":
 
     if test_target == "all":
         for test in compile_args:
+            do_or_cache(test, test_type, args)
+        for test in aoc_files:
             do_or_cache(test, test_type, args)
     else:
         do_or_cache(test_target, test_type, args)
