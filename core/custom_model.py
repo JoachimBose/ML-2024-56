@@ -1,29 +1,41 @@
 import os
 os.environ["KERAS_BACKEND"] = "torch"
 import torch
-import numpy as np
-from keras import Model
+import keras
+import subprocess
 
-class CustomModel(Model):
+test = "test"
+
+class CustomModel(keras.Model):
+    def __init__(self, test_names, *args, **kwargs):
+        self.test_names = test_names
+        super().__init__(*args, **kwargs)
+
     def train_step(self, data):
         # Unpack the data. Its structure depends on your model and
         # on what you pass to `fit()`.
         x, y = data
-
         # Call torch.nn.Module.zero_grad() to clear the leftover gradients
         # for the weights from the previous train step.
         self.zero_grad()
 
         # Compute loss
         y_pred = self(x, training=True)  # Forward pass
-        print(x)
-        print(y_pred)
-        #TODO y_pred are the determined optimisations in our case, and we should call clang with them.
-        #This is for all the x passed in, so if we use 10 application,
-        #then x is an array with 10 elements each of which is an array containing all the features in the input layer,
-        #y is an array with 10 elements each of which contains the output for each of the values in the nodes in the output layer.
-        loss = self.compute_loss(y=y, y_pred=y_pred)
-        
+        true_y_pred = []
+        for index, t in enumerate(y_pred):
+            test_name = self.test_names[index]
+            rounded = list(map(lambda x : "1" if x > 0.5 else "0", t))
+            process = subprocess.run(
+                ["python3", "./compile.py", test_name, "".join(rounded)],
+                check=True,
+                capture_output=True,
+                text=True
+            )
+            text = process.stderr
+            size = int(text.split(": ")[1])
+            true_y_pred.append(size)
+
+        loss = self.compute_loss(y=y, y_pred=torch.tensor(true_y_pred, dtype=torch.int32))
 
         # Call torch.Tensor.backward() on the loss to compute gradients
         # for the weights.

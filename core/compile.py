@@ -3,7 +3,7 @@ import sys
 import subprocess
 import logging
 
-logging.basicConfig(stream=sys.stderr, level=logging.WARNING)
+logging.basicConfig(stream=sys.stderr, level=logging.INFO)
 
 test_dir = "./test/PolyBenchC/"
 util_dir = "./test/PolyBenchC/utilities/"
@@ -47,14 +47,13 @@ compile_args = {
 potential_passes = [
     "loop-unroll",
     "sroa,mem2reg",
-    "licm",
     "loop-simplify,loop-rotate",
-    "early-cse,sink",
     "instcombine",
     "instsimplify",
     "loop-vectorize",
     "adce",
     "reassociate",
+    "licm",
 ]
 
 
