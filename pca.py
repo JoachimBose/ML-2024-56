@@ -3,7 +3,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 from pandas import read_csv, DataFrame
 import matplotlib.pyplot as plt
-from numpy import cumsum, savetxt
+from numpy import cumsum, savetxt, dtype
 
 # Where to read the source data from, where to put the output, how many components to get, and the label of the target value
 source_location = "./dataset.csv"
@@ -36,4 +36,17 @@ plt.savefig("img")
 df = DataFrame(X_pca_data)
 df.insert(len(df.columns), target, Y_data, True)
 df.insert(len(df.columns), test, test_data, True)
-savetxt(target_location, df, delimiter=",")
+
+
+fmt = ""
+# for i in range(0,11):
+#     fmt = "%.18e," + fmt
+
+for col in df:
+    if(type(df[col].dtype) == dtype('object')):
+        fmt += "%s,"
+    else:
+        fmt += "%.18e,"
+fmt = fmt[:-1] 
+savetxt(target_location, df, delimiter=",", fmt=fmt)
+
