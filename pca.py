@@ -3,7 +3,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 from pandas import read_csv, DataFrame
 import matplotlib.pyplot as plt
-from numpy import cumsum, savetxt
+from numpy import cumsum, savetxt, dtype
 
 # Where to read the source data from, where to put the output, how many components to get, and the label of the target value
 source_location = "./dataset.csv"
