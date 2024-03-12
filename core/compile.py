@@ -2,6 +2,7 @@ import os
 import sys
 import subprocess
 import logging
+from config import potential_passes
 
 logging.basicConfig(stream=sys.stderr, level=logging.INFO)
 
@@ -43,18 +44,6 @@ compile_args = {
     "trisolv": "",
     "trmm": "",
 }
-
-potential_passes = [
-    "loop-unroll",
-    "sroa,mem2reg",
-    "loop-simplify,loop-rotate",
-    "instcombine",
-    "instsimplify",
-    "loop-vectorize",
-    "adce",
-    "reassociate",
-    "licm",
-]
 
 
 def generate_llvm(test):

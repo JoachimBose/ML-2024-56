@@ -7,3 +7,9 @@ llvm-passes/**/Makefile
 **.gch
 llvm-passes/CMakeFiles/
 llvm-passes/CMakeCache.txt
+
+# output related stuff...
+**/*.csv
+**/*.png
+**/*.jpg
+

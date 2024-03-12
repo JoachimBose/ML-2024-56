@@ -4,18 +4,8 @@ import pygad as pg
 import pygad.kerasga as pgkGA
 import keras as keras
 import subprocess
-
-potential_passes = [
-    "loop-unroll",
-    "sroa,mem2reg",
-    "loop-simplify,loop-rotate",
-    "instcombine",
-    "instsimplify",
-    "loop-vectorize",
-    "adce",
-    "reassociate",
-    "licm",
-]
+import matplotlib.pyplot
+from config import potential_passes
 
 feature_cols = ["nBasicBlocks","nConditionalJMPs","nInsts"
                                 ,"nFPInsts","nIntInsts","nLoads","nStores",
@@ -86,7 +76,13 @@ model = constructNN()
 def on_generation(ga_instance):
     print(f"Generation = {ga_instance.generations_completed}")
     print(f"Fitness    = {ga_instance.best_solution()[1]}")
-    ga_instance.plot_fitness(title="PyGAD & Keras - Iteration vs. Fitness", linewidth=4)
+    
+    # ga_instance.plot_fitness(title="PyGAD & Keras - Iteration vs. Fitness", linewidth=4)
+    matplotlib.pyplot.figure()
+    matplotlib.pyplot.plot(ga_instance.best_solutions_fitness)
+    matplotlib.pyplot.savefig("PyGAD_figure.jpg")
+    # matplotlib.pyplot.show()
+
     return
 
 
@@ -112,7 +108,12 @@ def main():
     ga_instance.run()
 
     # After the generations complete, some plots are showed that summarize how the outputs/fitness values evolve over generations.
-    ga_instance.plot_fitness(title="PyGAD & Keras - Iteration vs. Fitness", linewidth=4)
+    # ga_instance.plot_fitness(title="PyGAD & Keras - Iteration vs. Fitness", linewidth=4)
+    matplotlib.pyplot.figure()
+    matplotlib.pyplot.plot(ga_instance.best_solutions_fitness)
+    matplotlib.pyplot.savefig("PyGAD_figure.jpg")
+    # matplotlib.pyplot.show()
+
 
 if(__name__ == "__main__"):
     main()

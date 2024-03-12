@@ -9,6 +9,8 @@ RUN apt-get update && apt-get install -y    \
     python3-minimal python3-pip             \
     wget software-properties-common
 
+RUN pip install tensorflow pandas torch keras scikit-learn
+
 # Setup LLVM repos for ubuntu
 RUN echo deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-17 main     \
     | tee -a /etc/apt/sources.list
