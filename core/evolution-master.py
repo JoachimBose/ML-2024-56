@@ -23,6 +23,7 @@ feature_cols = ["nBasicBlocks","nConditionalJMPs","nInsts"
                                 "functions"]
 
 input_dataset = pd.read_csv("/usr/src/app/dataset.csv")
+c = 0
 
 # Help me datascientists
 features_frame = input_dataset[feature_cols]
@@ -53,6 +54,9 @@ def find_codesize_for_sol(output_layers):
     return true_y_pred
 
 def fitness_function(ga_instance, solution, solution_idx):
+    global c
+    print(f"we fit? {c}")
+    c += 1
     predictions = pgkGA.predict(model=model,
                                         solution=solution,
                                         data=features_frame.to_numpy())
