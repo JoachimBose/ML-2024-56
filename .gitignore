@@ -12,4 +12,4 @@ llvm-passes/CMakeCache.txt
 **/*.csv
 **/*.png
 **/*.jpg
-
+**/*.txt

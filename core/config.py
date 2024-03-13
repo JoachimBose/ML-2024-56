@@ -1,11 +1,22 @@
+# https://llvm.org/docs/Passes.html#codegenprepare-optimize-for-code-generation
 potential_passes = [
-    "loop-unroll",
     "sroa,mem2reg",
-    "loop-simplify,loop-rotate",
     "instcombine",
     "instsimplify",
-    "loop-vectorize",
-    "adce",
     "reassociate",
-    "loop-mssa(licm<no-allowspeculation>)",
+    "early-cse",
+
+    "loop-mssa(licm)",
+    # "loop-mssa(loop-instsimplify)",
+    # "loop-unroll",
+    # "loop-deletion",
+    # "loop-vectorize",
+    "loop-simplify,loop-rotate",
+    "loop-sink",
+
+    "adce",
+    "dse",
+    "constraint-elimination",
+    "gvn",
+    "sccp",
 ]
