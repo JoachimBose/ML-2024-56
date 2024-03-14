@@ -45,19 +45,6 @@ compile_args = {
     "trmm": "",
 }
 
-
-potential_passes = [
-    "loop-unroll",
-    "sroa,mem2reg",
-    "loop-simplify,loop-rotate",
-    "instcombine",
-    "instsimplify",
-    "loop-vectorize",
-    "adce",
-    "reassociate",
-    "loop-instsimplify",
-]
-
 def get_passes():
     return potential_passes
 

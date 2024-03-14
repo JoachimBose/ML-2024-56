@@ -17,3 +17,8 @@ For consistent results, a docker container is provided, which can be built using
 When editing the `.cpp` files in `llvm-passes`, please use for vscode the
  `Clang_format_fallback Style`
  `{ BasedOnStyle: LLVM, IndentWidth: 4, ColumnLimit: 100 }` formatting settings.
+
+## TODO
+- refactor
+- put config stuff in `config.py`
+

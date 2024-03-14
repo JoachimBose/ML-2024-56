@@ -13,3 +13,4 @@ llvm-passes/CMakeCache.txt
 **/*.png
 **/*.jpg
 **/*.txt
+**/*.pkl
