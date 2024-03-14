@@ -2,8 +2,9 @@ import os
 import sys
 import subprocess
 import logging
+from config import potential_passes
 
-logging.basicConfig(stream=sys.stderr, level=logging.WARNING)
+logging.basicConfig(stream=sys.stderr, level=logging.INFO)
 
 test_dir = "./test/PolyBenchC/"
 util_dir = "./test/PolyBenchC/utilities/"
@@ -44,18 +45,21 @@ compile_args = {
     "trmm": "",
 }
 
+
 potential_passes = [
     "loop-unroll",
     "sroa,mem2reg",
-    "licm",
     "loop-simplify,loop-rotate",
-    "early-cse,sink",
     "instcombine",
     "instsimplify",
     "loop-vectorize",
     "adce",
     "reassociate",
+    "loop-instsimplify",
 ]
+
+def get_passes():
+    return potential_passes
 
 
 def generate_llvm(test):
@@ -64,6 +68,14 @@ def generate_llvm(test):
         logging.debug(f"Already cached: {test}.ll")
         return
     try:
+        logging.debug(f"""Running {' '.join([ 
+                "./gen_llvm.sh",
+                util_dir,
+                test_dir,
+                test,
+                compile_args[test],
+                out_file,
+            ])}""")
         process = subprocess.run(
             [
                 "./gen_llvm.sh",
@@ -92,6 +104,9 @@ def do_or_cache(test, test_type, args):
         logging.info(f"{test}~{test_type}: {os.stat(out_file).st_size}")
         return
     try:
+        logging.debug(f"""running: {' '.join(["./gen_bc.sh",
+                                            args, f"{cache_dir}{test}.ll",
+                                            out_file])}""")
         process = subprocess.run(
             ["./gen_bc.sh", args, f"{cache_dir}{test}.ll", out_file],
             check=True,
@@ -101,7 +116,9 @@ def do_or_cache(test, test_type, args):
         output = process.stdout
         logging.debug(f"gen_bc.sh output:\n{output}")
     except subprocess.CalledProcessError as e:
-        logging.debug(f"Error occurred: {e}")
+        logging.debug(f"ERROR OCCURRED: {e}")
+        logging.debug("==================== STDERR:")
+        logging.debug(process.stderr)
 
     logging.debug(f"Compiled: {test}-{test_type}.bc")
     logging.info(f"{test}-{test_type}: {os.stat(out_file).st_size}")
@@ -116,6 +133,13 @@ def bad_usage():
     print("pass binary length: ", len(potential_passes))
     exit(0)
 
+def get_args(test_type):
+    options = []
+    for i, c in enumerate(test_type):
+        if int(c):
+            options.append(potential_passes[i])
+    args = ",".join(options)
+    return args
 
 if __name__ == "__main__":
 
@@ -153,11 +177,7 @@ if __name__ == "__main__":
     elif test_type == "none":
         args = ""
     else:
-        options = []
-        for i, c in enumerate(test_type):
-            if int(c):
-                options.append(potential_passes[i])
-        args = ",".join(options)
+        args = get_args(test_type)
 
     if test_target == "all":
         for test in compile_args:
