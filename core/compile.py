@@ -10,7 +10,6 @@ logging.basicConfig(stream=sys.stderr, level=logging.INFO)
 test_dir = "./test/PolyBenchC/"
 util_dir = "./test/PolyBenchC/utilities/"
 aoc_dir = "./test/AoC"
-aocpp_dir = "./test/AoCpp"
 cache_dir = "./test/Cache/"
 if not os.path.exists(cache_dir):
     os.makedirs(cache_dir)
@@ -49,12 +48,9 @@ compile_args = {
 }
 
 aoc_files = [Path(file).stem for file in os.listdir(aoc_dir) if file.endswith(".c")]
-aocpp_files = [
-    Path(file).stem for file in os.listdir(aocpp_dir) if file.endswith(".cpp")
-]
 
 
-def generate_llvm(test, is_cpp=False):
+def generate_llvm(test):
     out_file = f"{cache_dir}{test}.ll"
     if os.path.exists(out_file):
         logging.debug(f"Already cached: {test}.ll")
@@ -77,10 +73,7 @@ def generate_llvm(test, is_cpp=False):
             output = process.stdout
             logging.debug(f"gen_llvm.sh output:\n{output}")
         else:
-            if is_cpp:
-                input_file = f"{aocpp_dir}/{test}.cpp"
-            else:
-                input_file = f"{aoc_dir}/{test}.c"
+            input_file = f"{aoc_dir}/{test}.c"
             process = subprocess.run(
                 [
                     "clang-17",
@@ -174,13 +167,8 @@ if __name__ == "__main__":
                 generate_llvm(test)
             for test in aoc_files:
                 generate_llvm(test)
-            for test in aocpp_files:
-                generate_llvm(test, True)
         else:
-            if test_target in aocpp_files:
-                generate_llvm(test_target, True)
-            else:
-                generate_llvm(test_target)
+            generate_llvm(test_target)
         exit(0)
 
     if test_type == "size":
@@ -199,10 +187,5 @@ if __name__ == "__main__":
             do_or_cache(test, test_type, args)
         for test in aoc_files:
             do_or_cache(test, test_type, args)
-        for test in aocpp_files:
-            do_or_cache(test, test_type, args, True)
     else:
-        if test_target in aocpp_files:
-            do_or_cache(test_target, test_type, args, True)
-        else:
-            do_or_cache(test_target, test_type, args)
+        do_or_cache(test_target, test_type, args)

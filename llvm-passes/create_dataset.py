@@ -13,8 +13,7 @@ logging.basicConfig(stream=sys.stderr, level=logging.WARNING)
 cache_dir = "../core/test/Cache/"
 tests_dir = "../core/test/PolyBenchC/"
 aoc_dir = "../core/test/AoC/"
-aocpp_dir = "../core/test/AoCpp/"
-test_names = [os.path.basename(f) for f in os.listdir(tests_dir)] + [Path(f).stem for f in os.listdir(aoc_dir) if f.endswith(".c")] + [Path(f).stem for f in os.listdir(aocpp_dir) if f.endswith(".cpp")]
+test_names = [os.path.basename(f) for f in os.listdir(tests_dir)] + [Path(f).stem for f in os.listdir(aoc_dir) if f.endswith(".c")]
 test_names.remove("utilities")
 
 features = [
