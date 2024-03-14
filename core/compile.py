@@ -14,40 +14,10 @@ cache_dir = "./test/Cache/"
 if not os.path.exists(cache_dir):
     os.makedirs(cache_dir)
 
-compile_args = {
-    "2mm": "",
-    "3mm": "",
-    "adi": "",
-    "atax": "",
-    "bicg": "",
-    "cholesky": "-lm",
-    "correlation": "-lm",
-    "covariance": "-lm",
-    "deriche": "-lm",
-    "doitgen": "",
-    "durbin": "",
-    "fdtd-2d": "",
-    "floyd-warshall": "",
-    "gemm": "",
-    "gemver": "",
-    "gesummv": "",
-    "gramschmidt": "-lm",
-    "heat-3d": "-lm",
-    "jacobi-1d": "",
-    "jacobi-2d": "",
-    "lu": "",
-    "ludcmp": "",
-    "mvt": "",
-    "nussinov": "",
-    "seidel-2d": "",
-    "symm": "",
-    "syr2k": "",
-    "syrk": "",
-    "trisolv": "",
-    "trmm": "",
-}
-
+poly_files = [os.path.basename(f) for f in os.listdir(test_dir)]
+poly_files.remove("utilities")
 aoc_files = [Path(file).stem for file in os.listdir(aoc_dir) if file.endswith(".c")]
+all_files = poly_files + aoc_files
 
 
 def generate_llvm(test):
@@ -56,14 +26,13 @@ def generate_llvm(test):
         logging.debug(f"Already cached: {test}.ll")
         return
     try:
-        if test in list(compile_args.keys()):
+        if test in list(poly_files):
             process = subprocess.run(
                 [
                     "./gen_llvm.sh",
                     util_dir,
                     test_dir,
                     test,
-                    compile_args[test],
                     out_file,
                 ],
                 check=True,
@@ -78,8 +47,10 @@ def generate_llvm(test):
                 [
                     "clang-17",
                     "-S",
-                    "-O0",
                     "-emit-llvm",
+                    "-O",
+                    "-Xclang",
+                    "-disable-llvm-passes",
                     input_file,
                     "-o",
                     out_file,
@@ -95,8 +66,8 @@ def generate_llvm(test):
     logging.debug(f"Generated: {test}.ll")
 
 
-def do_or_cache(test, test_type, args, is_cpp=False):
-    generate_llvm(test, is_cpp)
+def do_or_cache(test, test_type, args):
+    generate_llvm(test)
     out_file = f"{cache_dir}{test}-{test_type}.bc"
     if os.path.exists(out_file):
         logging.debug(f"Cached: {test}-{test_type}.bc")
@@ -124,7 +95,7 @@ def bad_usage():
     print("python3 compile.py <clean>")
     print("clean: clean, clean-bc")
     print("python3 compile.py <target> <passes>")
-    print("target: all, <test>")
+    print("target: all, poly, aoc, <test>")
     print("passes: llvm, size, none, <pass binary>")
     print("pass binary length: ", len(potential_passes))
     exit(0)
@@ -151,10 +122,7 @@ if __name__ == "__main__":
     test_target = sys.argv[1]
     test_type = sys.argv[2]
 
-    if (
-        test_target not in ["all"] + list(compile_args.keys())
-        and test_target not in aoc_files
-    ):
+    if test_target not in ["all", "poly", "aoc"] + all_files:
         bad_usage()
     if test_type not in ["llvm", "size", "none"] and (
         len(test_type) != len(potential_passes) or not test_type.isnumeric()
@@ -163,8 +131,12 @@ if __name__ == "__main__":
 
     if test_type == "llvm":
         if test_target == "all":
-            for test in compile_args:
+            for test in all_files:
                 generate_llvm(test)
+        elif test_target == "poly":
+            for test in poly_files:
+                generate_llvm(test)
+        elif test_target == "aoc":
             for test in aoc_files:
                 generate_llvm(test)
         else:
@@ -183,8 +155,12 @@ if __name__ == "__main__":
         args = ",".join(options)
 
     if test_target == "all":
-        for test in compile_args:
+        for test in all_files:
             do_or_cache(test, test_type, args)
+    elif test_target == "poly":
+        for test in poly_files:
+            do_or_cache(test, test_type, args)
+    elif test_target == "aoc":
         for test in aoc_files:
             do_or_cache(test, test_type, args)
     else:
