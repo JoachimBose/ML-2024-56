@@ -1,30 +1,45 @@
+"""Evolution model parameters"""
+SOL_PER_POP = 4 # Hyperparameters have been assigned defaulty
+NUM_GENERATIONS = 2 # Number of generations.
+NUM_PARENTS_MATING = 2 # Number of solutions to be selected as parents in the mating pool.
+
+"""Directory Constants"""
+POLY_DIR = "./test/PolyBenchC/"
+UTIL_DIR = "./test/PolyBenchC/utilities/"
+AOC_DIR = "./test/AoC/"
+CACHE_DIR = "./test/Cache/"
+OUTPUT_DIR = "./output/"
+
+"""Features extracted"""
+FEATURES = [
+    "nBasicBlocks",
+    "nConditionalJMPs",
+    "nInsts",
+    "nFPInsts",
+    "nIntInsts",
+    "nLoads",
+    "nStores",
+    "ratioFloatIntInsts",
+    "intrinsicFunctions",
+    "functions",
+]
+
+"""Passes for the EA to pick"""
 # https://llvm.org/docs/Passes.html#codegenprepare-optimize-for-code-generation
-potential_passes = [
+POTENTIAL_PASSES = [
     "adce",
     "aggressive-instcombine",
     "bdce",
-    # "called-value-propagation",
-    # "cg-profile",
     "constraint-elimination",
-    # "coro-cleanup",
-    # "coro-early",
-    # "coro-elide",
     "correlated-propagation",
-    # "deadargelim",
     "div-rem-pairs",
     "dse",
     "early-cse",
-    # "elim-avail-extern",
-    # "forceattrs",
-    # "function(annotation-remarks)",
     "function(early-cse)",
     "function(instcombine)",
     "function(lower-expect)",
     "function(simplifycfg)",
     "function(sroa)",
-    # "function-attrs",
-    # "globaldce",
-    # "globalopt",
     "gvn",
     # "inferattrs",
     "inject-tli-mappings",

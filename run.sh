@@ -1,11 +1,7 @@
 #!/bin/bash
 
-cd core
+cd core/
 python3 compile.py clean
 python3 compile.py all size &> /dev/null
-
-cd ../llvm-passes
-python3 create_dataset.py
-
-cd ..
-python3 pca.py
+python3 llvm-passes/create_dataset.py
+python3 pca.py all

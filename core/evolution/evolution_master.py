@@ -1,27 +1,25 @@
 import numpy as np
-import pandas as pd
 import pygad as pg
 import pygad.kerasga as pgkGA
 import keras as keras
-import subprocess
 import matplotlib as mpl
-import evolutionShapes as es
+import os
+import evolution_shapes as es
+from main.config import SOL_PER_POP, NUM_GENERATIONS, NUM_PARENTS_MATING
 
+# Make sure we're running in the file dir
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
-def main():
-    
-    #hyperparameters have been assigned defaulty
-    sol_per_pop = 4
+def main() -> None:
+    keras_ga = pgkGA.KerasGA(es.model, SOL_PER_POP)
 
-    keras_ga = pgkGA.KerasGA(es.model, sol_per_pop)
+    # Prepare the PyGAD parameters. Check the documentation for more information: 
+    # https://pygad.readthedocs.io/en/latest/pygad.html#pygad-ga-class
+    # Initial population of network weights
+    initial_population = keras_ga.population_weights 
 
-    # Prepare the PyGAD parameters. Check the documentation for more information: https://pygad.readthedocs.io/en/latest/pygad.html#pygad-ga-class
-    num_generations = 2 # Number of generations.
-    num_parents_mating = 2 # Number of solutions to be selected as parents in the mating pool.
-    initial_population = keras_ga.population_weights # Initial population of network weights
-
-    ga_instance = pg.GA(num_generations=num_generations,
-                        num_parents_mating=num_parents_mating,
+    ga_instance = pg.GA(num_generations=NUM_GENERATIONS,
+                        num_parents_mating=NUM_PARENTS_MATING,
                         initial_population=initial_population,
                         fitness_func=es.fitness_function,
                         on_generation=es.on_generation)

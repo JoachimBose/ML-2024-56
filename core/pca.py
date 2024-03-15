@@ -4,10 +4,11 @@ from sklearn.decomposition import PCA
 from pandas import read_csv, DataFrame
 import matplotlib.pyplot as plt
 from numpy import cumsum, savetxt, dtype
+from core.main.config import OUTPUT_DIR
 
 # Where to read the source data from, where to put the output, how many components to get, and the label of the target value
-source_location = "./dataset.csv"
-target_location = "./output.csv"
+source_location = OUTPUT_DIR + "dataset.csv"
+target_location = OUTPUT_DIR + "output.csv"
 n_components = 10
 target = "target-size"
 test = "test"
@@ -37,11 +38,7 @@ df = DataFrame(X_pca_data)
 df.insert(len(df.columns), target, Y_data, True)
 df.insert(len(df.columns), test, test_data, True)
 
-
 fmt = ""
-# for i in range(0,11):
-#     fmt = "%.18e," + fmt
-
 for col in df:
     if(type(df[col].dtype) == dtype('object')):
         fmt += "%s,"

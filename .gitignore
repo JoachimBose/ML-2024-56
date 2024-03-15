@@ -1,16 +1,24 @@
-llvm-passes/build
-core/test/Cache/
-llvm-passes/feat-extr/CMakeFiles/
-**/cmake_install.cmake
-llvm-passes/**/Makefile
-**/__pycache__/
+# LLVM related output
+core/llvm-passes/build
+core/llvm-passes/feat-extr/CMakeFiles/
+core/llvm-passes/**/Makefile
+core/llvm-passes/CMakeFiles/
+core/llvm-passes/CMakeCache.txt
 **.gch
-llvm-passes/CMakeFiles/
-llvm-passes/CMakeCache.txt
+**/cmake_install.cmake
 
-# output related stuff...
+# Cache
+core/test/Cache/
+
+# python
+**/__pycache__/
+
+# script related output
 **/*.csv
 **/*.png
 **/*.jpg
 **/*.txt
 **/*.pkl
+
+# editor
+.vscode/
