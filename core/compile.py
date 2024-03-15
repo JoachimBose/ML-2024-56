@@ -3,7 +3,7 @@ import sys
 import subprocess
 import logging
 from pathlib import Path
-from core.main.config import *
+from main.config import *
 
 # LOGGING LEVEL
 logging.basicConfig(stream=sys.stderr, level=logging.INFO)
@@ -130,21 +130,24 @@ def clean(files_to_clean: list[str]) -> None:
     sys.exit(0)
 
 
-def main() -> None:
+def main(argv: list[str]) -> None:
     if not os.path.exists(CACHE_DIR):
         os.makedirs(CACHE_DIR)
 
-    if len(sys.argv) < 2:
+    if not os.path.exists(OUTPUT_DIR):
+        os.makedirs(OUTPUT_DIR)
+
+    if len(argv) < 2:
         bad_usage()
-    elif len(sys.argv) < 3:
-        if sys.argv[1] == "clean":
+    elif len(argv) < 3:
+        if argv[1] == "clean":
             clean(os.listdir(CACHE_DIR))
-        if sys.argv[1] == "clean-bc":
+        if argv[1] == "clean-bc":
             clean([f for f in os.listdir(CACHE_DIR) if ".bc" in f])
         bad_usage()
 
-    test_target = sys.argv[1]
-    test_type = sys.argv[2]
+    test_target = argv[1]
+    test_type = argv[2]
 
     if (test_target not in ["all", "poly", "aoc"] + FILES["all"]) or (
         test_type not in ["llvm", "size", "none"]
@@ -169,4 +172,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv)

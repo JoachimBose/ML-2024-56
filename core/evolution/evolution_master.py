@@ -4,8 +4,8 @@ import pygad.kerasga as pgkGA
 import keras as keras
 import matplotlib as mpl
 import os
-import evolution_shapes as es
-from main.config import SOL_PER_POP, NUM_GENERATIONS, NUM_PARENTS_MATING
+import core.evolution.evolution_shapes as es
+from core.main.config import SOL_PER_POP, NUM_GENERATIONS, NUM_PARENTS_MATING, OUTPUT_DIR
 
 # Make sure we're running in the file dir
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
@@ -28,10 +28,10 @@ def main() -> None:
 
     # After the generations complete, some plots are showed that summarize how the outputs/fitness values evolve over generations.
     ga_instance.plot_fitness(title="PyGAD & Keras - Iteration vs. Fitness", linewidth=4)
-    ga_instance.save("ga_instance.evol")
+    ga_instance.save("../" + OUTPUT_DIR + "ga_instance.evol")
 
     mpl.pyplot.plot(ga_instance.best_solutions_fitness)
-    mpl.pyplot.savefig("PyGAD_figure.jpg")
+    mpl.pyplot.savefig("../" + OUTPUT_DIR + "PyGAD_figure.jpg")
 
     """
     breakdown of bestsolution() because python documentation is bad:
@@ -40,7 +40,7 @@ def main() -> None:
      - numpy tensor of the fitness of the best solution
      - index of best solution from population
     """
-    np.savetxt('best_solution_model_weights.csv', ga_instance.best_solution()[0],delimiter=",")
+    np.savetxt("../" + OUTPUT_DIR + "best_solution_model_weights.csv", ga_instance.best_solution()[0],delimiter=",")
 
 if(__name__ == "__main__"):
     main()

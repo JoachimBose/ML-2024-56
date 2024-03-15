@@ -4,7 +4,11 @@ from sklearn.decomposition import PCA
 from pandas import read_csv, DataFrame
 import matplotlib.pyplot as plt
 from numpy import cumsum, savetxt, dtype
-from core.main.config import OUTPUT_DIR
+import os
+from main.config import OUTPUT_DIR
+
+# Make sure we're running in the file dir
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 # Where to read the source data from, where to put the output, how many components to get, and the label of the target value
 source_location = OUTPUT_DIR + "dataset.csv"
@@ -31,7 +35,7 @@ X_pca_data = pca.fit_transform(X_data)
 
 # Plot the variance to see how it scales with the number of components
 plt.plot(cumsum(pca.explained_variance_ratio_))
-plt.savefig("img")
+plt.savefig(OUTPUT_DIR + "img")
 
 # Create a dataframe, add the target label and dump it back to disk
 df = DataFrame(X_pca_data)

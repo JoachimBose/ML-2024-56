@@ -3,12 +3,12 @@ import pygad.kerasga as pgkGA
 import keras as keras
 import subprocess
 import os
-from main.config import POTENTIAL_PASSES, FEATURES
+from core.main.config import POTENTIAL_PASSES, FEATURES, OUTPUT_DIR
 
 # Make sure we're running in the file dir
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
-input_dataset = pd.read_csv("../../dataset.csv")
+input_dataset = pd.read_csv("../" + OUTPUT_DIR + "dataset.csv")
 features_frame = input_dataset[FEATURES]
 test_col = input_dataset["test"].to_numpy()
 sizes_found = []
@@ -64,7 +64,7 @@ def constructNN() -> keras.Sequential:
 def on_generation(ga_instance):
     print(f"Generation = {ga_instance.generations_completed}")
     print(f"Fitness    = {sum(ga_instance.best_solution()[1])}")
-    ga_instance.save("ga_instance.evol")
+    ga_instance.save("../" + OUTPUT_DIR + "ga_instance.evol")
     return
 
 

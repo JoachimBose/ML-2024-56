@@ -1,11 +1,11 @@
 # LLVM related output
-core/llvm-passes/build
-core/llvm-passes/feat-extr/CMakeFiles/
-core/llvm-passes/**/Makefile
-core/llvm-passes/CMakeFiles/
-core/llvm-passes/CMakeCache.txt
+core/llvm_passes/build
+core/llvm_passes/feat-extr/CMakeFiles/
+core/llvm_passes/**/Makefile
 **.gch
 **/cmake_install.cmake
+core/llvm_passes/CMakeFiles/
+core/llvm_passes/CMakeCache.txt
 
 # Cache
 core/test/Cache/
@@ -17,7 +17,6 @@ core/test/Cache/
 **/*.csv
 **/*.png
 **/*.jpg
-**/*.txt
 **/*.pkl
 
 # editor
