@@ -3,6 +3,7 @@ import pygad.kerasga as pgkGA
 import keras as keras
 import subprocess
 import os
+import time as time
 from core.main.config import POTENTIAL_PASSES, FEATURES, OUTPUT_DIR
 
 # Make sure we're running in the file dir
@@ -21,19 +22,46 @@ def getPasses(t):
 
 def find_codesize_for_sol(output_layers):
     sizes = []
+
+    compiling_procs = []
     for index, output_layer in enumerate(output_layers):
         test_name = test_col[index]
-
-        cmd = ["python3", "../compile.py", test_name, getPasses(output_layer)]
-        opt_process = subprocess.run(cmd, check=True, capture_output=True, text=True)
-        text = opt_process.stderr
-        size = int(text.split(": ")[1])
+        cmd = ["python3","../compile.py",test_name,getPasses(output_layer)]
+        
+        compiling_procs.append(subprocess.Popen(" ".join(cmd), 
+            stderr = subprocess.PIPE,
+            stdin = subprocess.PIPE,
+            shell=True))
+    for index, output_layer in enumerate(output_layers):
+        compiling_procs[index].wait()
+        # print("done waiting!")
+        # print(dir(compiling_procs[index].stderr))
+        text = compiling_procs[index].stderr.readline().decode(encoding='utf-8')
+        # print(f"text is of type {type(text)} and is: {text}")
+        try:
+            size = int(text.split(": ")[1])
+        except:
+            print(text)
         sizes.append(size)
-    print(f"fit? {sum(sizes)}")
+
+    # for index, output_layer in enumerate(output_layers):
+    #     test_name = test_col[index]
+
+    #     cmd = ["python3", "../compile.py", test_name, getPasses(output_layer)]
+    #     opt_process = subprocess.run(cmd, check=True, capture_output=True, text=True)
+    #     text = opt_process.stderr
+    #     try:
+    #         size = int(text.split(": ")[1])
+    #         sizes.append(size)
+    #     except:
+    #         print(text)
+    #         sizes.append(100000000000000)
+    #         exit(0)
     return sizes
 
 
 def fitness_function(ga_instance, solution, solution_idx):
+    start = time.time()
     predictions = pgkGA.predict(
         model=model, solution=solution, data=features_frame.to_numpy()
     )
@@ -41,6 +69,8 @@ def fitness_function(ga_instance, solution, solution_idx):
 
     for i in range(0, len(size)):
         size[i] = -(size[i])
+    end = time.time()
+    print(f"size: {sum(size)} fitness took {end - start} ")
     return size  # avoid sticky situations
 
 
