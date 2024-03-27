@@ -4,8 +4,8 @@ Overleaf link: https://www.overleaf.com/8326198222kgpttwgvnzqc#7175f7
 
 ## Overview
 
-The development of the llvm pass is done in the `llvm-pass/` directory, whereas
- the other development is done in the `core/` directory.
+All the development is done in the `core/` directory, which is organized into
+ subdirectories.
 
 ## Setup
 
@@ -18,7 +18,7 @@ When editing the `.cpp` files in `llvm-passes`, please use for vscode the
  `Clang_format_fallback Style`
  `{ BasedOnStyle: LLVM, IndentWidth: 4, ColumnLimit: 100 }` formatting settings.
 
-## TODO
-- refactor
-- put config stuff in `config.py`
-
+## Running
+Then, to run the project, use `run.sh` from the root directory. You can use the
+ `-e` flag to do the evolution, `-d` to disable the compilation & friends, and
+ `-s {tests}` to select which files to use as tests.

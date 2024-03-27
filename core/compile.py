@@ -2,49 +2,42 @@ import os
 import sys
 import subprocess
 import logging
-from config import potential_passes
 from pathlib import Path
+from main.config import *
 
+# LOGGING LEVEL
 logging.basicConfig(stream=sys.stderr, level=logging.INFO)
 
-test_dir = "./test/PolyBenchC/"
-util_dir = "./test/PolyBenchC/utilities/"
-aoc_dir = "./test/AoC"
-cache_dir = "./test/Cache/"
-if not os.path.exists(cache_dir):
-    os.makedirs(cache_dir)
+# Make sure we're running in the file dir
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
-poly_files = [os.path.basename(f) for f in os.listdir(test_dir)]
-poly_files.remove("utilities")
-aoc_files = [Path(file).stem for file in os.listdir(aoc_dir) if file.endswith(".c")]
-all_files = poly_files + aoc_files
+FILES = {
+    "poly": (
+        poly := [
+            os.path.basename(f) for f in os.listdir(POLY_DIR) if not "utilities" in f
+        ]
+    ),
+    "aoc": (
+        aoc := [Path(file).stem for file in os.listdir(AOC_DIR) if file.endswith(".c")]
+    ),
+    "all": (aoc + poly),
+}
 
-def get_passes():
-    return potential_passes
 
+def generate_llvm(test: str) -> None:
+    out_file = f"{CACHE_DIR}{test}.ll"
 
-def generate_llvm(test):
-    out_file = f"{cache_dir}{test}.ll"
     if os.path.exists(out_file):
         logging.debug(f"Already cached: {test}.ll")
         return
+    
     try:
-        if test in list(poly_files):
-            logging.debug(f"""Running {' '.join([ 
-                "./gen_llvm.sh",
-                util_dir,
-                test_dir,
-                test,
-                out_file,
-            ])}""")
+        if test in list(FILES["poly"]):
+            args = ["./gen_llvm.sh", UTIL_DIR, POLY_DIR, test, out_file]
+
+            logging.debug(f"Running {' '.join(args)}")
             process = subprocess.run(
-                [
-                    "./gen_llvm.sh",
-                    util_dir,
-                    test_dir,
-                    test,
-                    out_file,
-                ],
+                args,
                 check=True,
                 capture_output=True,
                 text=True,
@@ -52,7 +45,7 @@ def generate_llvm(test):
             output = process.stdout
             logging.debug(f"gen_llvm.sh output:\n{output}")
         else:
-            input_file = f"{aoc_dir}/{test}.c"
+            input_file = f"{AOC_DIR}/{test}.c"
             process = subprocess.run(
                 [
                     "clang-17",
@@ -76,19 +69,21 @@ def generate_llvm(test):
     logging.debug(f"Generated: {test}.ll")
 
 
-def do_or_cache(test, test_type, args):
+def do_or_cache(test: str, test_type: str, args: str) -> None:
     generate_llvm(test)
-    out_file = f"{cache_dir}{test}-{test_type}.bc"
+    out_file = f"{CACHE_DIR}{test}-{test_type}.bc"
+    
     if os.path.exists(out_file):
         logging.debug(f"Cached: {test}-{test_type}.bc")
         logging.info(f"{test}~{test_type}: {os.stat(out_file).st_size}")
         return
+
     try:
-        logging.debug(f"""running: {' '.join(["./gen_bc.sh",
-                                            args, f"{cache_dir}{test}.ll",
-                                            out_file])}""")
+        args = ["./gen_bc.sh", args, f"{CACHE_DIR}{test}.ll", out_file]
+        logging.debug(f"running: {' '.join(args)}")
+        
         process = subprocess.run(
-            ["./gen_bc.sh", args, f"{cache_dir}{test}.ll", out_file],
+            args,
             check=True,
             capture_output=True,
             text=True,
@@ -104,81 +99,77 @@ def do_or_cache(test, test_type, args):
     logging.info(f"{test}-{test_type}: {os.stat(out_file).st_size}")
 
 
-def bad_usage():
+def bad_usage() -> None:
     print("bad usage, see examples:")
     print("python3 compile.py <clean>")
     print("clean: clean, clean-bc")
     print("python3 compile.py <target> <passes>")
     print("target: all, poly, aoc, <test>")
     print("passes: llvm, size, none, <pass binary>")
-    print("pass binary length: ", len(potential_passes))
-    exit(0)
+    print("pass binary length: ", len(POTENTIAL_PASSES))
+    sys.exit(0)
 
-def get_args(test_type):
+
+def get_args(test_type: str) -> str:
+    if test_type == "size":
+        return "default<Os>"
+    if test_type == "none":
+        return ""
+
     options = []
     for i, c in enumerate(test_type):
         if int(c):
-            options.append(potential_passes[i])
+            options.append(POTENTIAL_PASSES[i])
     args = ",".join(options)
     return args
 
-if __name__ == "__main__":
 
-    if sys.argv.__len__() < 2:
+def clean(files_to_clean: list[str]) -> None:
+    for file in files_to_clean:
+        os.remove(f"{CACHE_DIR}{file}")
+    sys.exit(0)
+
+
+def main(argv: list[str]) -> None:
+    if not os.path.exists(CACHE_DIR):
+        os.makedirs(CACHE_DIR)
+
+    if not os.path.exists(OUTPUT_DIR):
+        os.makedirs(OUTPUT_DIR)
+
+    if len(argv) < 2:
+        bad_usage()
+    elif len(argv) < 3:
+        if argv[1] == "clean":
+            clean(os.listdir(CACHE_DIR))
+        if argv[1] == "clean-bc":
+            clean([f for f in os.listdir(CACHE_DIR) if ".bc" in f])
         bad_usage()
 
-    if sys.argv[1] == "clean":
-        for file in os.listdir(cache_dir):
-            os.remove(f"{cache_dir}{file}")
-        exit(0)
-    if sys.argv[1] == "clean-bc":
-        for file in os.listdir(cache_dir):
-            if file.endswith(".bc"):
-                os.remove(f"{cache_dir}{file}")
-        exit(0)
+    test_target = argv[1]
+    test_type = argv[2]
 
-    if sys.argv.__len__() < 3:
-        bad_usage()
-
-    test_target = sys.argv[1]
-    test_type = sys.argv[2]
-
-    if test_target not in ["all", "poly", "aoc"] + all_files:
-        bad_usage()
-    if test_type not in ["llvm", "size", "none"] and (
-        len(test_type) != len(potential_passes) or not test_type.isnumeric()
+    if (test_target not in ["all", "poly", "aoc"] + FILES["all"]) or (
+        test_type not in ["llvm", "size", "none"]
+        and (len(test_type) != len(POTENTIAL_PASSES) or not test_type.isnumeric())
     ):
         bad_usage()
 
     if test_type == "llvm":
-        if test_target == "all":
-            for test in all_files:
-                generate_llvm(test)
-        elif test_target == "poly":
-            for test in poly_files:
-                generate_llvm(test)
-        elif test_target == "aoc":
-            for test in aoc_files:
+        if test_target in FILES:
+            for test in FILES[test_target]:
                 generate_llvm(test)
         else:
             generate_llvm(test_target)
-        exit(0)
+        sys.exit(0)
 
-    if test_type == "size":
-        args = "default<Os>"
-    elif test_type == "none":
-        args = ""
-    else:
-        args = get_args(test_type)
-
-    if test_target == "all":
-        for test in all_files:
-            do_or_cache(test, test_type, args)
-    elif test_target == "poly":
-        for test in poly_files:
-            do_or_cache(test, test_type, args)
-    elif test_target == "aoc":
-        for test in aoc_files:
+    args = get_args(test_type)
+    if test_target in FILES:
+        for test in FILES[test_target]:
             do_or_cache(test, test_type, args)
     else:
         do_or_cache(test_target, test_type, args)
+
+
+if __name__ == "__main__":
+    main(sys.argv)
