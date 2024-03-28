@@ -7,20 +7,33 @@ import os
 import core.evolution.evolution_shapes as es
 from core.main.config import SOL_PER_POP, NUM_GENERATIONS, NUM_PARENTS_MATING, OUTPUT_DIR, MODEL_DIR
 import pandas as pd
+import sys
 
 # Make sure we're running in the file dir
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 def main() -> None:
-    keras_ga = pgkGA.KerasGA(es.model, SOL_PER_POP)
+    if len(sys.argv) != 4:
+        print("ERROR: Incorrect argument amount")
+        sys.exit(1)
+    sol = int(sys.argv[1]) # SOL_PER_POP
+    gen = int(sys.argv[2]) # NUM_GENERATIONS
+    par = int(sys.argv[3]) # NUM_PARENTS_MATING
+    output_file = "../" + MODEL_DIR + f"{sol}-{gen}-{par}.csv"
+    if os.path.exists(output_file):
+        print("ERROR: Model already exists")
+        sys.exit(1)
+    
+    
+    keras_ga = pgkGA.KerasGA(es.model, sol)
 
     # Prepare the PyGAD parameters. Check the documentation for more information: 
     # https://pygad.readthedocs.io/en/latest/pygad.html#pygad-ga-class
     # Initial population of network weights
     initial_population = keras_ga.population_weights 
 
-    ga_instance = pg.GA(num_generations=NUM_GENERATIONS,
-                        num_parents_mating=NUM_PARENTS_MATING,
+    ga_instance = pg.GA(num_generations=gen,
+                        num_parents_mating=par,
                         initial_population=initial_population,
                         fitness_func=es.fitness_function,
                         on_generation=es.on_generation)
@@ -42,7 +55,7 @@ def main() -> None:
      - index of best solution from population
     """
     np.savetxt("../" + OUTPUT_DIR + "best_solution_model_weights.csv", ga_instance.best_solution()[0],delimiter=",")
-    np.savetxt("../" + MODEL_DIR + f"{SOL_PER_POP}-{NUM_GENERATIONS}-{NUM_PARENTS_MATING}.csv", ga_instance.best_solution()[0],delimiter=",")
+    np.savetxt("../" + MODEL_DIR + f"{sol}-{gen}-{par}.csv", ga_instance.best_solution()[0],delimiter=",")
     
     
 
