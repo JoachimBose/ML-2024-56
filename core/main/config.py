@@ -1,6 +1,6 @@
 """Evolution model parameters"""
 SOL_PER_POP = 4 # Hyperparameters have been assigned defaulty
-NUM_GENERATIONS = 10 # Number of generations.
+NUM_GENERATIONS = 2 # Number of generations.
 NUM_PARENTS_MATING = 2 # Number of solutions to be selected as parents in the mating pool.
 
 """Directory Constants"""
@@ -11,6 +11,8 @@ AOCVALID_DIR = "./test/AoCValid/"
 AOCTEST_DIR = "./test/AoCTest/"
 CACHE_DIR = "./test/Cache/"
 OUTPUT_DIR = "./output/"
+MODEL_DIR = "./output/models/"
+PERF_DIR = "./output/performance/"
 
 """Features extracted"""
 FEATURES = [

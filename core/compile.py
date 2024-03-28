@@ -30,7 +30,7 @@ FILES = {
             Path(file).stem for file in os.listdir(AOCTEST_DIR) if file.endswith(".c")
         ]
     ),
-    "all": (aoc + poly),
+    "all": (aoc + poly + aocvalid + aoctest),
 }
 
 

@@ -9,10 +9,12 @@ from core.main.config import POTENTIAL_PASSES, FEATURES, OUTPUT_DIR
 # Make sure we're running in the file dir
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
-input_dataset = pd.read_csv("../" + OUTPUT_DIR + "dataset.csv")
-features_frame = input_dataset[FEATURES]
+
+input_dataset = pd.read_csv("../" + OUTPUT_DIR + "training_pca.csv")
+features_frame = input_dataset.iloc[:, :4] # input_dataset[FEATURES]
 test_col = input_dataset["test"].to_numpy()
 sizes_found = []
+num_features = 4  # len(FEATURES)
 
 
 def getPasses(t):
@@ -26,37 +28,24 @@ def find_codesize_for_sol(output_layers):
     compiling_procs = []
     for index, output_layer in enumerate(output_layers):
         test_name = test_col[index]
-        cmd = ["python3","../compile.py",test_name,getPasses(output_layer)]
-        
-        compiling_procs.append(subprocess.Popen(" ".join(cmd), 
-            stderr = subprocess.PIPE,
-            stdin = subprocess.PIPE,
-            shell=True))
+        cmd = ["python3", "../compile.py", test_name, getPasses(output_layer)]
+
+        compiling_procs.append(
+            subprocess.Popen(
+                " ".join(cmd), stderr=subprocess.PIPE, stdin=subprocess.PIPE, shell=True
+            )
+        )
     for index, output_layer in enumerate(output_layers):
         compiling_procs[index].wait()
         # print("done waiting!")
         # print(dir(compiling_procs[index].stderr))
-        text = compiling_procs[index].stderr.readline().decode(encoding='utf-8')
+        text = compiling_procs[index].stderr.readline().decode(encoding="utf-8")
         # print(f"text is of type {type(text)} and is: {text}")
         try:
             size = int(text.split(": ")[1])
         except:
             print(text)
         sizes.append(size)
-
-    # for index, output_layer in enumerate(output_layers):
-    #     test_name = test_col[index]
-
-    #     cmd = ["python3", "../compile.py", test_name, getPasses(output_layer)]
-    #     opt_process = subprocess.run(cmd, check=True, capture_output=True, text=True)
-    #     text = opt_process.stderr
-    #     try:
-    #         size = int(text.split(": ")[1])
-    #         sizes.append(size)
-    #     except:
-    #         print(text)
-    #         sizes.append(100000000000000)
-    #         exit(0)
     return sizes
 
 
@@ -75,10 +64,10 @@ def fitness_function(ga_instance, solution, solution_idx):
 
 
 def constructNN() -> keras.Sequential:
-    input_layer = keras.Input(shape=(len(FEATURES),))
-    dense_layer1 = keras.layers.Dense(len(FEATURES), activation="relu")
-    dense_layer2 = keras.layers.Dense(len(FEATURES), activation="relu")
-    dense_layer3 = keras.layers.Dense(len(FEATURES), activation="relu")
+    input_layer = keras.Input(shape=(num_features,))
+    dense_layer1 = keras.layers.Dense(num_features, activation="relu")
+    dense_layer2 = keras.layers.Dense(num_features, activation="relu")
+    dense_layer3 = keras.layers.Dense(num_features, activation="relu")
 
     output_layer = keras.layers.Dense(len(POTENTIAL_PASSES), activation="sigmoid")
 
@@ -99,3 +88,4 @@ def on_generation(ga_instance):
 
 
 model = constructNN()
+

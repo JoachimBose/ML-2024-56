@@ -5,7 +5,8 @@ import keras as keras
 import matplotlib as mpl
 import os
 import core.evolution.evolution_shapes as es
-from core.main.config import SOL_PER_POP, NUM_GENERATIONS, NUM_PARENTS_MATING, OUTPUT_DIR
+from core.main.config import SOL_PER_POP, NUM_GENERATIONS, NUM_PARENTS_MATING, OUTPUT_DIR, MODEL_DIR
+import pandas as pd
 
 # Make sure we're running in the file dir
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
@@ -32,7 +33,7 @@ def main() -> None:
 
     mpl.pyplot.plot(ga_instance.best_solutions_fitness)
     mpl.pyplot.savefig("../" + OUTPUT_DIR + "PyGAD_figure.jpg")
-
+    
     """
     breakdown of bestsolution() because python documentation is bad:
     best_solution() returns a tuple:
@@ -41,6 +42,9 @@ def main() -> None:
      - index of best solution from population
     """
     np.savetxt("../" + OUTPUT_DIR + "best_solution_model_weights.csv", ga_instance.best_solution()[0],delimiter=",")
+    np.savetxt("../" + MODEL_DIR + f"{SOL_PER_POP}-{NUM_GENERATIONS}-{NUM_PARENTS_MATING}.csv", ga_instance.best_solution()[0],delimiter=",")
+    
+    
 
 if(__name__ == "__main__"):
     main()
