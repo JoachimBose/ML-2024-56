@@ -9,7 +9,7 @@ import subprocess
 import logging
 import pandas as pd
 from pathlib import Path
-from core.main.config import FEATURES, CACHE_DIR, POLY_DIR, AOC_DIR, OUTPUT_DIR
+from core.main.config import FEATURES, CACHE_DIR, POLY_DIR, AOC_DIR, OUTPUT_DIR, AOCVALID_DIR, AOCTEST_DIR
 
 # LOGGING LEVEL
 logging.basicConfig(stream=sys.stderr, level=logging.WARNING)
@@ -21,8 +21,11 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 cache_dir = "../" + CACHE_DIR
 poly_dir = "../" + POLY_DIR
 aoc_dir = "../" + AOC_DIR
-dataset_path = "../" + OUTPUT_DIR + "dataset.csv"
-
+aocvalid_dir = "../" + AOCVALID_DIR
+aoctest_dir = "../" + AOCTEST_DIR
+dataset_path = "../" + OUTPUT_DIR + "training.csv"
+validation_path = "../" + OUTPUT_DIR + "validation.csv"
+test_path = "../" + OUTPUT_DIR + "testing.csv"
 
 def main() -> None:
     if len(sys.argv) != 2:
@@ -30,11 +33,18 @@ def main() -> None:
         sys.exit(1)
     version = sys.argv[1]
 
+    output_path = dataset_path
     test_names = []
     if version == "poly" or version == "all":
         test_names += [os.path.basename(f) for f in os.listdir(poly_dir) if not "utilities" in f]
     if version == "aoc" or version == "all":
         test_names += [Path(f).stem for f in os.listdir(aoc_dir) if f.endswith(".c")]
+    if version == "aocvalid":
+        test_names += [Path(f).stem for f in os.listdir(aocvalid_dir) if f.endswith(".c")]
+        output_path = validation_path
+    if version == "aoctest":
+        test_names += [Path(f).stem for f in os.listdir(aoctest_dir) if f.endswith(".c")]
+        output_path = test_path
     columns = ["test"] + FEATURES + ["target-size"]
 
     extracted_features = pd.DataFrame(columns=columns)
@@ -64,8 +74,8 @@ def main() -> None:
             pd.Series(row, index=columns), ignore_index=True
         )
 
-    extracted_features.to_csv(dataset_path, encoding="utf-8", index=False)
-    logging.info(f"Data written to {dataset_path}")
+    extracted_features.to_csv(output_path, encoding="utf-8", index=False)
+    logging.info(f"Data written to {output_path}")
 
 if __name__ == "__main__":
     main()

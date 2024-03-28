@@ -7,6 +7,8 @@ NUM_PARENTS_MATING = 2 # Number of solutions to be selected as parents in the ma
 POLY_DIR = "./test/PolyBenchC/"
 UTIL_DIR = "./test/PolyBenchC/utilities/"
 AOC_DIR = "./test/AoC/"
+AOCVALID_DIR = "./test/AoCValid/"
+AOCTEST_DIR = "./test/AoCTest/"
 CACHE_DIR = "./test/Cache/"
 OUTPUT_DIR = "./output/"
 
