@@ -30,3 +30,25 @@ combined_df = pd.concat(unique_columns.values(), axis=1)
 combined_df.to_csv(f"../{OUTPUT_DIR}master_perfomance.csv", index=False)
 
 print("Combined CSV file saved successfully.")
+
+target_sizes = combined_df["target-size"]
+results = []
+proportions = []
+for index, column in enumerate(combined_df.columns):
+    if index <= 1:
+        continue
+    result = 0
+    larger = 0
+    smaller = 0
+    for i, row in combined_df.iterrows():
+        if row[column] - target_sizes[i] > 0:
+            result += -(row[column] - target_sizes[i]) ** 2
+            larger += 1
+        else:
+            result += (row[column] - target_sizes[i]) ** 2
+            smaller += 1
+    results.append(result)
+    proportions.append((larger, smaller))
+print("Results", results)
+print("Larger-Smaller: ",  proportions)
+print(f"Best model: {combined_df.columns[results.index(max(results)) + 2]}")

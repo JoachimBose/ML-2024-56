@@ -17,7 +17,7 @@ usage() {
     echo " -h   Display this help message"
 }
 
-while getopts "s:deh" flag; do
+while getopts "s:dehp" flag; do
     case $flag in
         s)
             tests="${OPTARG}"
@@ -27,6 +27,9 @@ while getopts "s:deh" flag; do
         ;;
         e) # Enable evolution
             evolution=true
+        ;;
+        p) # paramter modeling
+            param=true
         ;;
         h) # Display usage
             usage
@@ -48,4 +51,38 @@ then
     python3 -m core.evolution.evolution_master
     python3 -m core.evolution.evolution_shapes
     python3 -m core.evolution.plotmaker
+fi
+
+if [ "$param" = true ];
+then
+    # Create base files
+    python3 core/compile.py all size &> /dev/null
+
+    # Create Training, Validation and Test datasets
+    python3 -m core.llvm_passes.create_dataset aoc
+    python3 -m core.llvm_passes.create_dataset aocvalid
+    python3 -m core.llvm_passes.create_dataset aoctest
+
+    # Create PCA'd datasets
+    python3 core/pca.py
+    python3 core/pca.py validation
+    python3 core/pca.py testing
+
+    # Create all the models
+    for sol in 4 8 #12 16 20
+    do
+        for par in 2 4 #6 8 10
+        do
+            for gen in 5 10 #15 20 25
+            do
+                python3 -m core.evolution.evolution_master $sol $gen $par 
+            done    
+        done    
+    done
+
+    # Validate the models
+    python3 -m core.evolution.validation_assesser
+
+    # Combine the results
+    python3 -m core.evolution.performance_combiner
 fi
