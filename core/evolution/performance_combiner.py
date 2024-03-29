@@ -56,5 +56,5 @@ for index, column in enumerate(combined_df.columns):
 print("Results", results)
 print("Larger-Smaller: ",  proportions)
 print(f"Best model: {combined_df.columns[results.index(max(results)) + 2]}")
-print(f"Alt Best model: {combined_df.columns[alt_results.index(max(alt_results)) + 2]}")
+print(f"Alt Best model: {combined_df.columns[alt_results.index(min(alt_results)) + 2]}")
 

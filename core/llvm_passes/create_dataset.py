@@ -48,6 +48,7 @@ def main() -> None:
         output_path = test_path
     if version == "final":
         test_names += [Path(f).stem for f in os.listdir(aoc_dir) if f.endswith(".c")] + [Path(f).stem for f in os.listdir(aocvalid_dir) if f.endswith(".c")]
+        output_path = final_path
     columns = ["test"] + FEATURES + ["target-size"]
 
     extracted_features = pd.DataFrame(columns=columns)

@@ -10,7 +10,7 @@ from core.main.config import POTENTIAL_PASSES, FEATURES, OUTPUT_DIR
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 
-input_dataset = pd.read_csv("../" + OUTPUT_DIR + "training_pca.csv") # Change to final for training + validation
+input_dataset = pd.read_csv("../" + OUTPUT_DIR + "final_pca.csv") # Change to final for training + validation
 features_frame = input_dataset.iloc[:, :4] # input_dataset[FEATURES]
 test_col = input_dataset["test"].to_numpy()
 sizes_found = []

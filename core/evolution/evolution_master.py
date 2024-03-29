@@ -19,10 +19,10 @@ def main() -> None:
     sol = int(sys.argv[1]) # SOL_PER_POP
     gen = int(sys.argv[2]) # NUM_GENERATIONS
     par = int(sys.argv[3]) # NUM_PARENTS_MATING
-    output_file = "../" + MODEL_DIR + f"{sol}-{gen}-{par}.csv"
-    if os.path.exists(output_file):
-        print(f"ERROR: Model already exists at {sol}-{gen}-{par}")
-        sys.exit(1)
+    output_file = f"../{OUTPUT_DIR}final_model-{sol}-{gen}-{par}.csv" #"../" + MODEL_DIR + f"{sol}-{gen}-{par}.csv"
+    # if os.path.exists(output_file):
+    #     print(f"ERROR: Model already exists at {sol}-{gen}-{par}")
+    #     sys.exit(1)
     
     
     keras_ga = pgkGA.KerasGA(es.model, sol)
@@ -55,7 +55,7 @@ def main() -> None:
      - index of best solution from population
     """
     np.savetxt("../" + OUTPUT_DIR + "best_solution_model_weights.csv", ga_instance.best_solution()[0],delimiter=",")
-    np.savetxt("../" + MODEL_DIR + f"{sol}-{gen}-{par}.csv", ga_instance.best_solution()[0],delimiter=",")
+    np.savetxt(output_file, ga_instance.best_solution()[0],delimiter=",")
     
     
 
