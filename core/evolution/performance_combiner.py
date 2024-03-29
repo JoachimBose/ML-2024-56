@@ -33,11 +33,13 @@ print("Combined CSV file saved successfully.")
 
 target_sizes = combined_df["target-size"]
 results = []
+alt_results = []
 proportions = []
 for index, column in enumerate(combined_df.columns):
     if index <= 1:
         continue
     result = 0
+    alt_result = 0
     larger = 0
     smaller = 0
     for i, row in combined_df.iterrows():
@@ -47,8 +49,12 @@ for index, column in enumerate(combined_df.columns):
         else:
             result += (row[column] - target_sizes[i]) ** 2
             smaller += 1
+        alt_result += row[column]
     results.append(result)
+    alt_results.append(alt_result)
     proportions.append((larger, smaller))
 print("Results", results)
 print("Larger-Smaller: ",  proportions)
 print(f"Best model: {combined_df.columns[results.index(max(results)) + 2]}")
+print(f"Alt Best model: {combined_df.columns[alt_results.index(max(alt_results)) + 2]}")
+

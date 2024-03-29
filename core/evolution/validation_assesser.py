@@ -13,14 +13,19 @@ import matplotlib.pyplot as plt
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 def main() -> None:
-    validation_data = pd.read_csv(f"../{OUTPUT_DIR}validation_pca.csv")
+    validation_data = pd.read_csv(f"../{OUTPUT_DIR}validation_pca.csv") 
     validation_frame = validation_data.iloc[:, :4]     
     
     for file in os.listdir("../" + MODEL_DIR):
         if not file.endswith(".csv"):
             continue
         model_file = file
-
+        
+        output_file = f"../{PERF_DIR}{model_file}"
+        if os.path.exists(output_file):
+            print("ERROR: Performance already evaluated")
+            continue
+                
         best_model_weights = np.loadtxt("../" + MODEL_DIR + model_file, delimiter=",")
         predictions = pgkGA.predict(model=es.model, solution=best_model_weights, data=validation_frame)
         choices = list(map(es.getPasses, predictions)) 
@@ -47,7 +52,7 @@ def main() -> None:
                             'target-size' : validation_data['target-size'],
                             'actual-size' : sizes}
         data = pd.DataFrame(labeled_predictions)
-        data.to_csv(f"../{PERF_DIR}{model_file}")    
+        data.to_csv(output_file)    
 
     # plt.scatter(sizes, validation_data['target-size'])
     # plt.axline((0, 0), slope=1, color='red')

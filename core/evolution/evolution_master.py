@@ -21,7 +21,7 @@ def main() -> None:
     par = int(sys.argv[3]) # NUM_PARENTS_MATING
     output_file = "../" + MODEL_DIR + f"{sol}-{gen}-{par}.csv"
     if os.path.exists(output_file):
-        print("ERROR: Model already exists")
+        print(f"ERROR: Model already exists at {sol}-{gen}-{par}")
         sys.exit(1)
     
     

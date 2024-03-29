@@ -26,6 +26,7 @@ aoctest_dir = "../" + AOCTEST_DIR
 dataset_path = "../" + OUTPUT_DIR + "training.csv"
 validation_path = "../" + OUTPUT_DIR + "validation.csv"
 test_path = "../" + OUTPUT_DIR + "testing.csv"
+final_path = "../" + OUTPUT_DIR + "final.csv"
 
 def main() -> None:
     if len(sys.argv) != 2:
@@ -45,6 +46,8 @@ def main() -> None:
     if version == "aoctest":
         test_names += [Path(f).stem for f in os.listdir(aoctest_dir) if f.endswith(".c")]
         output_path = test_path
+    if version == "final":
+        test_names += [Path(f).stem for f in os.listdir(aoc_dir) if f.endswith(".c")] + [Path(f).stem for f in os.listdir(aocvalid_dir) if f.endswith(".c")]
     columns = ["test"] + FEATURES + ["target-size"]
 
     extracted_features = pd.DataFrame(columns=columns)

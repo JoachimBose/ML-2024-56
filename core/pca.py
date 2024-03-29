@@ -17,6 +17,8 @@ if len(sys.argv) >= 2:
         version = "validation"
     elif sys.argv[1] == "testing":
         version = "testing"
+    elif sys.argv[1] == "final":
+        version = "final"
 
 # Where to read the source data from, where to put the output, how many components to get, and the label of the target value
 source_location = OUTPUT_DIR + f"{version}.csv"
