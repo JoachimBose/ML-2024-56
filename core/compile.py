@@ -20,7 +20,17 @@ FILES = {
     "aoc": (
         aoc := [Path(file).stem for file in os.listdir(AOC_DIR) if file.endswith(".c")]
     ),
-    "all": (aoc + poly),
+    "aocvalid": (
+        aocvalid := [
+            Path(file).stem for file in os.listdir(AOCVALID_DIR) if file.endswith(".c")
+        ]
+    ),
+    "aoctest": (
+        aoctest := [
+            Path(file).stem for file in os.listdir(AOCTEST_DIR) if file.endswith(".c")
+        ]
+    ),
+    "all": (aoc + poly + aocvalid + aoctest),
 }
 
 
@@ -45,7 +55,15 @@ def generate_llvm(test: str) -> None:
             output = process.stdout
             logging.debug(f"gen_llvm.sh output:\n{output}")
         else:
-            input_file = f"{AOC_DIR}/{test}.c"
+            if test in list(FILES["aoc"]):
+                input_file = f"{AOC_DIR}/{test}.c"
+            elif test in list(FILES["aocvalid"]):
+                input_file = f"{AOCVALID_DIR}/{test}.c"
+            elif test in list(FILES["aoctest"]):
+                input_file = f"{AOCTEST_DIR}/{test}.c"
+            else:
+                logging.error(f"Test {test} not found in any of the directories")
+                return
             process = subprocess.run(
                 [
                     "clang-17",
@@ -149,7 +167,7 @@ def main(argv: list[str]) -> None:
     test_target = argv[1]
     test_type = argv[2]
 
-    if (test_target not in ["all", "poly", "aoc"] + FILES["all"]) or (
+    if (test_target not in ["all", "poly", "aoc", "aocvalid", "aoctest"] + FILES["all"]) or (
         test_type not in ["llvm", "size", "none"]
         and (len(test_type) != len(POTENTIAL_PASSES) or not test_type.isnumeric())
     ):

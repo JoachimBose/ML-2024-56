@@ -5,15 +5,25 @@ from pandas import read_csv, DataFrame
 import matplotlib.pyplot as plt
 from numpy import cumsum, savetxt, dtype
 import os
+import sys
 from main.config import OUTPUT_DIR
 
 # Make sure we're running in the file dir
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
+version = "training"
+if len(sys.argv) >= 2:
+    if sys.argv[1] == "validation":
+        version = "validation"
+    elif sys.argv[1] == "testing":
+        version = "testing"
+    elif sys.argv[1] == "final":
+        version = "final"
+
 # Where to read the source data from, where to put the output, how many components to get, and the label of the target value
-source_location = OUTPUT_DIR + "dataset.csv"
-target_location = OUTPUT_DIR + "output.csv"
-n_components = 10
+source_location = OUTPUT_DIR + f"{version}.csv"
+target_location = OUTPUT_DIR + f"{version}_pca.csv"
+n_components = 4
 target = "target-size"
 test = "test"
 
@@ -42,12 +52,4 @@ df = DataFrame(X_pca_data)
 df.insert(len(df.columns), target, Y_data, True)
 df.insert(len(df.columns), test, test_data, True)
 
-fmt = ""
-for col in df:
-    if(type(df[col].dtype) == dtype('object')):
-        fmt += "%s,"
-    else:
-        fmt += "%.18e,"
-fmt = fmt[:-1] 
-savetxt(target_location, df, delimiter=",", fmt=fmt)
-
+df.to_csv(target_location, index=False)
