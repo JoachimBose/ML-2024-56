@@ -23,7 +23,7 @@ def main() -> None:
         
         output_file = f"../{PERF_DIR}{model_file}"
         if os.path.exists(output_file):
-            print("ERROR: Performance already evaluated")
+            print(f"ERROR: Performance already evaluated {model_file[:-4]}")
             continue
                 
         best_model_weights = np.loadtxt("../" + MODEL_DIR + model_file, delimiter=",")
